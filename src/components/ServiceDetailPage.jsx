@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { SERVICES_DATA } from '../servicesData';
 import { ChevronLeft, CheckCircle, Clock, ShieldAlert, DollarSign, ArrowLeft } from 'lucide-react';
 
-function ServiceDetailPage({ serviceId, onNavigate }) {
-  // Find the selected service
-  const service = SERVICES_DATA.find(s => s.id === serviceId);
+function ServiceDetailPage({ serviceId, onNavigate, services }) {
+  // Find the selected service dynamically
+  const servicesList = services && services.length > 0 ? services : SERVICES_DATA;
+  const service = servicesList.find(s => s.id === serviceId);
 
   // Scroll to top when page mounts
   useEffect(() => {

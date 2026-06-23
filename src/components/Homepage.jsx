@@ -27,16 +27,24 @@ const FAQS = [
   }
 ];
 
-function Homepage({ onSelectService, onNavigate }) {
+function Homepage({ onSelectService, onNavigate, settings, services }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
+  const SLIDES = settings?.slides && settings.slides.length > 0 ? settings.slides : [
+    '/slide1.png',
+    '/slide2.png',
+    '/slide3.png'
+  ];
+
+  const servicesList = services && services.length > 0 ? services.filter(s => !s.isPaused) : SERVICES_DATA;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [SLIDES.length]);
 
   const toggleFaq = (index) => {
     if (openFaqIndex === index) {
@@ -45,6 +53,12 @@ function Homepage({ onSelectService, onNavigate }) {
       setOpenFaqIndex(index);
     }
   };
+
+  const seoData = settings?.seo?.homepage;
+  const badges = seoData?.subHeaders && seoData.subHeaders.length > 0 ? seoData.subHeaders : ['৩ দিনে আপনার সব ধরনের লাইসেন্স রেডি!'];
+  const title = seoData?.headers?.[0] || 'Get Your Trade License Ready in 3 Days!';
+  const subtitle = seoData?.headers?.[1] || 'YOUR ONE STOP SERVICE HUB';
+  const description = seoData?.plainText || '"Our main purpose is to provide you with the best service." We handle new trade license registrations, renewals, NBR VAT (BIN) certificates, and company filings directly with government offices.';
 
   return (
     <div className="homepage-section">
@@ -103,19 +117,21 @@ function Homepage({ onSelectService, onNavigate }) {
               fontWeight: 700,
               border: '1px solid #86efac'
             }}>
-              YOUR ONE STOP SERVICE HUB
+              {subtitle}
             </span>
-            <span style={{
-              backgroundColor: '#fef2f2',
-              color: '#ef4444',
-              padding: '0.4rem 1rem',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              border: '1px solid #fca5a5'
-            }}>
-              ৩ দিনে আপনার সব ধরনের লাইসেন্স রেডি!
-            </span>
+            {badges.map((badge, idx) => (
+              <span key={idx} style={{
+                backgroundColor: '#fef2f2',
+                color: '#ef4444',
+                padding: '0.4rem 1rem',
+                borderRadius: '20px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                border: '1px solid #fca5a5'
+              }}>
+                {badge}
+              </span>
+            ))}
           </div>
           <h1 style={{
             fontSize: '3.5rem',
@@ -126,8 +142,12 @@ function Homepage({ onSelectService, onNavigate }) {
             marginBottom: '1.5rem',
             letterSpacing: '-0.02em'
           }}>
-            Get Your Trade License <br/>
-            <span style={{ color: '#ef4444' }}>Ready in 3 Days!</span>
+            {title.includes('3 Days') ? (
+              <>
+                {title.split('3 Days')[0]}
+                <span style={{ color: '#ef4444' }}>3 Days!</span>
+              </>
+            ) : title}
           </h1>
           <p style={{
             fontSize: '1.2rem',
@@ -136,7 +156,7 @@ function Homepage({ onSelectService, onNavigate }) {
             margin: '0 auto 2.5rem auto',
             lineHeight: '1.6'
           }}>
-            "Our main purpose is to provide you with the best service." We handle new trade license registrations, renewals, NBR VAT (BIN) certificates, and company filings directly with government offices.
+            {description}
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
             <button 
@@ -189,7 +209,7 @@ function Homepage({ onSelectService, onNavigate }) {
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '2.5rem'
         }}>
-          {SERVICES_DATA.map((service) => (
+          {servicesList.map((service) => (
             <div 
               key={service.id} 
               className="service-card"

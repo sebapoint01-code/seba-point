@@ -1,7 +1,13 @@
 import React from 'react';
 import { Facebook, Mail, MapPin, Phone } from 'lucide-react';
 
-function Footer({ onNavigate }) {
+function Footer({ onNavigate, settings }) {
+  const siteLogo = settings?.logo || '/logo.png';
+  const address = settings?.footerAddress || 'NE3, House-16, Road-10, Gulshan-1, Dhaka-1212, Bangladesh.';
+  const phone = settings?.footerPhone || '01813-884475';
+  const email = settings?.footerEmail || 'sebapoint01@gmail.com';
+  const facebookUrl = settings?.socialLinks?.facebook || 'https://www.facebook.com/sebapoint';
+
   return (
     <footer style={{
       backgroundColor: '#0f172a',
@@ -29,8 +35,8 @@ function Footer({ onNavigate }) {
             marginBottom: '1.5rem'
           }}>
             <img 
-              src="/logo.png" 
-              alt="SebaPoint Logo" 
+              src={siteLogo} 
+              alt={settings?.siteName || "SebaPoint Logo"} 
               style={{ height: '40px', objectFit: 'contain' }} 
             />
           </div>
@@ -39,7 +45,7 @@ function Footer({ onNavigate }) {
           </p>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <a 
-              href="https://www.facebook.com/sebapoint" 
+              href={facebookUrl} 
               target="_blank" 
               rel="noreferrer"
               style={{
@@ -73,17 +79,6 @@ function Footer({ onNavigate }) {
                 </a>
               </li>
             ))}
-            <li>
-                <a 
-                  href="#dashboard" 
-                  onClick={(e) => { e.preventDefault(); onNavigate('dashboard'); }} 
-                  style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.3s ease' }}
-                  onMouseOver={(e) => e.target.style.color = '#ef4444'}
-                  onMouseOut={(e) => e.target.style.color = '#94a3b8'}
-                >
-                  Client Billing Portal
-                </a>
-            </li>
           </ul>
         </div>
 
@@ -93,15 +88,15 @@ function Footer({ onNavigate }) {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', color: '#cbd5e1' }}>
               <MapPin size={18} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
-              <span style={{ lineHeight: '1.5' }}>NE3, House-16, Road-10,<br/>Gulshan-1, Dhaka-1212,<br/>Bangladesh</span>
+              <span style={{ lineHeight: '1.5' }}>{address}</span>
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#cbd5e1' }}>
               <Phone size={18} style={{ color: '#16a34a', flexShrink: 0 }} />
-              <span>01813-884475</span>
+              <span>{phone}</span>
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#cbd5e1' }}>
               <Mail size={18} style={{ color: '#16a34a', flexShrink: 0 }} />
-              <span>sebapoint01@gmail.com</span>
+              <span>{email}</span>
             </li>
           </ul>
         </div>
@@ -111,7 +106,7 @@ function Footer({ onNavigate }) {
       {/* Copyright Bar */}
       <div style={{ backgroundColor: '#020617', padding: '1.5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', color: '#475569', fontSize: '0.85rem' }}>
-          © {new Date().getFullYear()} SebaPoint. All rights reserved.
+          © {new Date().getFullYear()} {settings?.siteName || 'SebaPoint'}. All rights reserved.
         </div>
       </div>
     </footer>

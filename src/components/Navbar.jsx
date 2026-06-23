@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ExternalLink, Shield, Menu, X } from 'lucide-react';
 
-function Navbar({ currentView, onNavigate }) {
+function Navbar({ currentView, onNavigate, settings }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -19,6 +19,8 @@ function Navbar({ currentView, onNavigate }) {
     { id: 'about', label: 'About Us' },
     { id: 'contact', label: 'Contacts' }
   ];
+
+  const siteLogo = settings?.logo || '/logo.png';
 
   return (
     <header className="landing-header no-print" style={{
@@ -49,8 +51,8 @@ function Navbar({ currentView, onNavigate }) {
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
         >
           <img 
-            src="/logo.png" 
-            alt="SebaPoint Logo" 
+            src={siteLogo} 
+            alt={settings?.siteName || "SebaPoint Logo"} 
             style={{ 
               height: isScrolled ? '50px' : '65px', 
               transition: 'height 0.3s ease',
@@ -81,39 +83,6 @@ function Navbar({ currentView, onNavigate }) {
               </a>
             ))}
           </div>
-          
-          {/* Billing portal CTA */}
-          <button 
-            onClick={() => onNavigate('dashboard')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '50px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#dc2626';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#ef4444';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
-            }}
-          >
-            <Shield size={16} />
-            <span>Billing Portal</span>
-            <ExternalLink size={14} />
-          </button>
         </nav>
 
         {/* Mobile Menu Toggle */}
@@ -156,27 +125,6 @@ function Navbar({ currentView, onNavigate }) {
               {link.label}
             </a>
           ))}
-          <button 
-            onClick={() => { setMobileMenuOpen(false); onNavigate('dashboard'); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '50px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginTop: '0.5rem'
-            }}
-          >
-            <Shield size={16} />
-            <span>Billing Portal</span>
-            <ExternalLink size={14} />
-          </button>
         </div>
       )}
 

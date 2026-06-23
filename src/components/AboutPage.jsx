@@ -1,7 +1,12 @@
 import React from 'react';
 import { ShieldAlert, Award, Milestone, Users } from 'lucide-react';
 
-function AboutPage() {
+function AboutPage({ settings }) {
+  const title = settings?.aboutTitle || 'Our Mission & Story';
+  const content = settings?.aboutContent || 'Starting a business in Bangladesh should be exciting, not bogged down by weeks of standing in bank queues, tracking holding utility bills, or coordinating inspector visits. SebaPoint was founded with a clear mission: to act as a reliable, fully transparent brokerage point connecting business owners directly to City Corporation offices.\n\nWe act as a licensed broker to prepare application filings, submit official challan bank deposits, and facilitate property inspector inspections. By carrying out the administrative legwork, we enable local shop owners, importers, exporters, and Limited Companies to get back to what matters most—scaling their operations.';
+
+  const paragraphs = content.split('\n\n');
+
   return (
     <div className="about-page" style={{ paddingTop: '5.5rem' }}>
       
@@ -14,7 +19,7 @@ function AboutPage() {
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', color: '#0f172a', marginBottom: '1rem' }}>
-            About SebaPoint
+            About {settings?.siteName || 'SebaPoint'}
           </h1>
           <p style={{ fontSize: '1.15rem', color: '#475569', lineHeight: '1.6' }}>
             Learn more about Dhaka's premier trade license brokerage and corporate registration hub.
@@ -27,7 +32,7 @@ function AboutPage() {
         
         <div style={{ marginBottom: '3.5rem' }}>
           <h2 style={{ fontSize: '2rem', color: '#0f172a', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
-            Our Mission & Story
+            {title}
           </h2>
           <blockquote style={{
             borderLeft: '4px solid #ef4444',
@@ -40,12 +45,11 @@ function AboutPage() {
           }}>
             "Our main purpose is to provide you with the best service."
           </blockquote>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
-            Starting a business in Bangladesh should be exciting, not bogged down by weeks of standing in bank queues, tracking holding utility bills, or coordinating inspector visits. **SebaPoint** was founded with a clear mission: to act as a reliable, fully transparent brokerage point connecting business owners directly to City Corporation offices.
-          </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.8' }}>
-            We act as a licensed broker to prepare application filings, submit official challan bank deposits, and facilitate property inspector inspections. By carrying out the administrative legwork, we enable local shop owners, importers, exporters, and Limited Companies to get back to what matters most—scaling their operations.
-          </p>
+          {paragraphs.map((p, idx) => (
+            <p key={idx} style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+              {p}
+            </p>
+          ))}
         </div>
 
         {/* Pillars Grid */}
