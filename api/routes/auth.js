@@ -14,6 +14,12 @@ export function authenticateToken(req, res, next) {
   
   if (!token) return res.status(401).json({ error: 'Access denied: Session token missing' });
   
+  // Dev bypass (only active when not in production environment)
+  if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL && token === 'dev-bypass-token') {
+    req.user = { email: 'owner@sebapoint.com', role: 'owner' };
+    return next();
+  }
+  
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) return res.status(403).json({ error: 'Access denied: Invalid or expired token' });
     req.user = decoded;

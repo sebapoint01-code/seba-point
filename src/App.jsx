@@ -98,6 +98,16 @@ function App() {
 
   // Initial Data Load
   useEffect(() => {
+    // Development auto-login bypass (only on localhost)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      const loggedOut = localStorage.getItem('seba_logged_out');
+      if (!localStorage.getItem('seba_token') && !loggedOut) {
+        localStorage.setItem('seba_token', 'dev-bypass-token');
+        localStorage.setItem('seba_user', JSON.stringify({ email: 'owner@sebapoint.com', role: 'owner' }));
+        setToken('dev-bypass-token');
+        setUser({ email: 'owner@sebapoint.com', role: 'owner' });
+      }
+    }
     fetchSettings();
     fetchInvoices();
   }, []);
@@ -166,6 +176,7 @@ function App() {
   const handleLoginSuccess = (newToken, newUser) => {
     localStorage.setItem('seba_token', newToken);
     localStorage.setItem('seba_user', JSON.stringify(newUser));
+    localStorage.removeItem('seba_logged_out');
     setToken(newToken);
     setUser(newUser);
     
@@ -181,6 +192,9 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('seba_token');
     localStorage.removeItem('seba_user');
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      localStorage.setItem('seba_logged_out', 'true');
+    }
     setToken(null);
     setUser(null);
     setCurrentView('homepage');
