@@ -1,24 +1,27 @@
 import React, { useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { SERVICES_DATA } from '../servicesData';
 import { ChevronLeft, CheckCircle, Clock, ShieldAlert, DollarSign, ArrowLeft } from 'lucide-react';
 
-function ServiceDetailPage({ serviceId, onNavigate, services }) {
+function ServiceDetailPage({ services }) {
+  const { id } = useParams();
+
   // Find the selected service dynamically
   const servicesList = services && services.length > 0 ? services : SERVICES_DATA;
-  const service = servicesList.find(s => s.id === serviceId);
+  const service = servicesList.find(s => s.id === id);
 
-  // Scroll to top when page mounts
+  // Scroll to top when page mounts or id changes
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [serviceId]);
+  }, [id]);
 
   if (!service) {
     return (
       <div style={{ padding: '8rem 2rem', textAlign: 'center' }}>
         <h2>Service not found</h2>
-        <button className="btn btn-primary" onClick={() => onNavigate('homepage')}>
+        <Link className="btn btn-primary" to="/home" style={{ textDecoration: 'none', display: 'inline-block', marginTop: '1rem' }}>
           Return Home
-        </button>
+        </Link>
       </div>
     );
   }
@@ -33,13 +36,12 @@ function ServiceDetailPage({ serviceId, onNavigate, services }) {
         padding: '1.5rem 2rem'
       }} className="no-print">
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-          <a 
-            href="#homepage" 
-            onClick={(e) => { e.preventDefault(); onNavigate('homepage'); }}
+          <Link 
+            to="/home" 
             style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
           >
             Home
-          </a>
+          </Link>
           <span style={{ color: '#cbd5e1' }}>/</span>
           <span style={{ color: 'var(--text-muted)' }}>Services</span>
           <span style={{ color: '#cbd5e1' }}>/</span>
@@ -51,14 +53,14 @@ function ServiceDetailPage({ serviceId, onNavigate, services }) {
       <section style={{ padding: '4rem 2rem', maxWidth: '1100px', margin: '0 auto' }}>
         
         {/* Back Button */}
-        <button 
-          className="btn btn-secondary" 
-          onClick={() => onNavigate('homepage')}
-          style={{ marginBottom: '2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem' }}
+        <Link 
+          to="/home" 
+          className="btn btn-secondary"
+          style={{ marginBottom: '2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', textDecoration: 'none' }}
         >
           <ArrowLeft size={16} />
           <span>Back to Services</span>
-        </button>
+        </Link>
 
         {/* Title Block */}
         <div style={{ marginBottom: '3rem' }}>
@@ -163,9 +165,9 @@ function ServiceDetailPage({ serviceId, onNavigate, services }) {
                 </div>
               </div>
 
-              <button 
+              <Link 
+                to="/contact"
                 className="btn" 
-                onClick={() => onNavigate('contact')}
                 style={{
                   backgroundColor: '#16a34a',
                   color: '#ffffff',
@@ -173,13 +175,16 @@ function ServiceDetailPage({ serviceId, onNavigate, services }) {
                   justifyContent: 'center',
                   padding: '0.85rem',
                   boxShadow: '0 4px 10px 0 rgba(22, 163, 74, 0.2)',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center'
                 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
               >
                 <span>Inquire About Service</span>
-              </button>
+              </Link>
             </div>
 
             {/* Note box */}

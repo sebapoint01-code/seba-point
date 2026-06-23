@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Key, Mail, RefreshCw, ArrowLeft, Send, Check } from 'lucide-react';
 
-function AuthPanel({ role, onLoginSuccess, onNavigate }) {
+function OwnerLogin({ onLoginSuccess }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,12 +33,12 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
         throw new Error(data.error || 'Login failed');
       }
       
-      // Ensure the logged-in user matches the expected panel role
-      if (data.user.role !== role) {
-        throw new Error(`Unauthorized: This account is not registered as an ${role}`);
+      if (data.user.role !== 'owner') {
+        throw new Error('Unauthorized: This account is not registered as the Business Owner');
       }
 
       onLoginSuccess(data.token, data.user);
+      navigate('/owner-panel');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,20 +160,20 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
             width: '60px',
             height: '60px',
             borderRadius: '50%',
-            backgroundColor: role === 'owner' ? '#fef2f2' : '#f0fdf4',
-            color: role === 'owner' ? '#ef4444' : '#16a34a',
+            backgroundColor: '#fef2f2',
+            color: '#ef4444',
             marginBottom: '1rem'
           }}>
             <Shield size={28} />
           </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', textTransform: 'capitalize' }}>
-            {role} Portal
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>
+            Owner Portal
           </h2>
           <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            {mode === 'login' && `Log in using your registered credentials.`}
-            {mode === 'forgot' && `Request a secure password reset link.`}
-            {mode === 'otp' && `Enter the 6-digit OTP code sent to your email.`}
-            {mode === 'reset' && `Specify a new secure password.`}
+            {mode === 'login' && 'Log in using your registered credentials.'}
+            {mode === 'forgot' && 'Request a secure password reset link.'}
+            {mode === 'otp' && 'Enter the 6-digit OTP code sent to your email.'}
+            {mode === 'reset' && 'Specify a new secure password.'}
           </p>
         </div>
 
@@ -223,7 +225,7 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
                 <input 
                   type="email" 
                   className="form-control"
-                  placeholder="admin@sebapoint.com"
+                  placeholder="owner@sebapoint.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   style={{ paddingLeft: '2.5rem' }}
@@ -238,7 +240,7 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
                 <button 
                   type="button"
                   onClick={() => { setError(''); setMode('forgot'); }}
-                  style={{ background: 'none', border: 'none', color: '#16a34a', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
                 >
                   Forgot Password?
                 </button>
@@ -262,14 +264,14 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
               className="btn"
               disabled={loading}
               style={{
-                backgroundColor: role === 'owner' ? '#ef4444' : '#16a34a',
+                backgroundColor: '#ef4444',
                 color: '#ffffff',
                 width: '100%',
                 justifyContent: 'center',
                 padding: '0.85rem',
                 fontSize: '1rem',
                 marginTop: '0.5rem',
-                boxShadow: role === 'owner' ? '0 4px 10px rgba(239, 68, 68, 0.2)' : '0 4px 10px rgba(22, 163, 74, 0.2)'
+                boxShadow: '0 4px 10px rgba(239, 68, 68, 0.2)'
               }}
             >
               {loading ? <RefreshCw size={18} className="spin-animation" /> : 'Log In'}
@@ -287,7 +289,7 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
                 <input 
                   type="email" 
                   className="form-control"
-                  placeholder="admin@sebapoint.com"
+                  placeholder="owner@sebapoint.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   style={{ paddingLeft: '2.5rem' }}
@@ -311,7 +313,7 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
                 className="btn"
                 disabled={loading}
                 style={{
-                  backgroundColor: '#16a34a',
+                  backgroundColor: '#ef4444',
                   color: '#ffffff',
                   flex: 2,
                   justifyContent: 'center',
@@ -356,7 +358,7 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
                 className="btn"
                 disabled={loading}
                 style={{
-                  backgroundColor: '#16a34a',
+                  backgroundColor: '#ef4444',
                   color: '#ffffff',
                   flex: 2,
                   justifyContent: 'center',
@@ -393,7 +395,7 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
               className="btn"
               disabled={loading}
               style={{
-                backgroundColor: '#16a34a',
+                backgroundColor: '#ef4444',
                 color: '#ffffff',
                 width: '100%',
                 justifyContent: 'center',
@@ -409,21 +411,12 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
 
         {/* Bottom Toggle */}
         <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem' }}>
-          {role === 'admin' ? (
-            <button 
-              onClick={() => onNavigate('owner-login')}
-              style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              Are you the Owner? Log in here
-            </button>
-          ) : (
-            <button 
-              onClick={() => onNavigate('admin-login')}
-              style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              Are you an Employee? Log in here
-            </button>
-          )}
+          <button 
+            onClick={() => navigate('/adminlogin')}
+            style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Are you an Employee? Log in here
+          </button>
         </div>
 
       </div>
@@ -431,4 +424,4 @@ function AuthPanel({ role, onLoginSuccess, onNavigate }) {
   );
 }
 
-export default AuthPanel;
+export default OwnerLogin;

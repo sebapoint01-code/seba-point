@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { ExternalLink, Shield, Menu, X } from 'lucide-react';
 
-function Navbar({ currentView, onNavigate, settings }) {
+function Navbar({ settings }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const pathname = location.pathname;
 
   // Handle scroll effect for glassmorphism
   useEffect(() => {
@@ -15,12 +18,17 @@ function Navbar({ currentView, onNavigate, settings }) {
   }, []);
 
   const navLinks = [
-    { id: 'homepage', label: 'Home' },
-    { id: 'about', label: 'About Us' },
-    { id: 'contact', label: 'Contacts' }
+    { path: '/home', label: 'Home' },
+    { path: '/about', label: 'About Us' },
+    { path: '/contact', label: 'Contacts' }
   ];
 
   const siteLogo = settings?.logo || '/logo.png';
+
+  const isActive = (path) => {
+    if (path === '/home' && (pathname === '/' || pathname === '/home')) return true;
+    return pathname === path;
+  };
 
   return (
     <header className="landing-header no-print" style={{
@@ -46,9 +54,10 @@ function Navbar({ currentView, onNavigate, settings }) {
       }}>
         
         {/* Logo */}
-        <div 
-          onClick={() => { setMobileMenuOpen(false); onNavigate('homepage'); }}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        <Link 
+          to="/home"
+          onClick={() => setMobileMenuOpen(false)}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none' }}
         >
           <img 
             src={siteLogo} 
@@ -59,29 +68,31 @@ function Navbar({ currentView, onNavigate, settings }) {
               objectFit: 'contain' 
             }} 
           />
-        </div>
+        </Link>
 
         {/* Desktop Navigation */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }} className="desktop-nav">
           <div style={{ display: 'flex', gap: '2rem' }}>
-            {navLinks.map((link) => (
-              <a 
-                key={link.id}
-                href={`#${link.id}`} 
-                onClick={(e) => { e.preventDefault(); onNavigate(link.id); }}
-                style={{
-                  textDecoration: 'none',
-                  color: currentView === link.id ? '#16a34a' : '#475569',
-                  fontWeight: currentView === link.id ? 700 : 500,
-                  fontSize: '1rem',
-                  transition: 'color 0.2s ease'
-                }}
-                onMouseOver={(e) => { if (currentView !== link.id) e.target.style.color = '#ef4444'; }}
-                onMouseOut={(e) => { if (currentView !== link.id) e.target.style.color = '#475569'; }}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const active = isActive(link.path);
+              return (
+                <Link 
+                  key={link.path}
+                  to={link.path}
+                  style={{
+                    textDecoration: 'none',
+                    color: active ? '#16a34a' : '#475569',
+                    fontWeight: active ? 700 : 500,
+                    fontSize: '1rem',
+                    transition: 'color 0.2s ease'
+                  }}
+                  onMouseOver={(e) => { if (!active) e.target.style.color = '#ef4444'; }}
+                  onMouseOut={(e) => { if (!active) e.target.style.color = '#475569'; }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </nav>
 
@@ -108,23 +119,26 @@ function Navbar({ currentView, onNavigate, settings }) {
           boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)',
           zIndex: 999
         }}>
-          {navLinks.map((link) => (
-            <a 
-              key={link.id}
-              href={`#${link.id}`} 
-              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate(link.id); }}
-              style={{
-                textDecoration: 'none',
-                color: currentView === link.id ? '#16a34a' : '#475569',
-                fontWeight: currentView === link.id ? 700 : 500,
-                fontSize: '1.1rem',
-                padding: '0.5rem 0',
-                borderBottom: '1px solid #f1f5f9'
-              }}
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const active = isActive(link.path);
+            return (
+              <Link 
+                key={link.path}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  textDecoration: 'none',
+                  color: active ? '#16a34a' : '#475569',
+                  fontWeight: active ? 700 : 500,
+                  fontSize: '1.1rem',
+                  padding: '0.5rem 0',
+                  borderBottom: '1px solid #f1f5f9'
+                }}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
       )}
 

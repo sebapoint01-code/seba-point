@@ -1,12 +1,19 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Facebook, Mail, MapPin, Phone } from 'lucide-react';
 
-function Footer({ onNavigate, settings }) {
+function Footer({ settings }) {
   const siteLogo = settings?.logo || '/logo.png';
   const address = settings?.footerAddress || 'NE3, House-16, Road-10, Gulshan-1, Dhaka-1212, Bangladesh.';
   const phone = settings?.footerPhone || '01813-884475';
   const email = settings?.footerEmail || 'sebapoint01@gmail.com';
   const facebookUrl = settings?.socialLinks?.facebook || 'https://www.facebook.com/sebapoint';
+
+  const quickLinks = [
+    { path: '/home', label: 'Home' },
+    { path: '/about', label: 'About Us' },
+    { path: '/contact', label: 'Contacts' }
+  ];
 
   return (
     <footer style={{
@@ -66,17 +73,16 @@ function Footer({ onNavigate, settings }) {
         <div>
           <h3 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '1.5rem', fontWeight: 600 }}>Quick Links</h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {['homepage', 'about', 'contact'].map((page) => (
-              <li key={page}>
-                <a 
-                  href={`#${page}`} 
-                  onClick={(e) => { e.preventDefault(); onNavigate(page); }} 
-                  style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.3s ease', textTransform: 'capitalize' }}
+            {quickLinks.map((link) => (
+              <li key={link.path}>
+                <Link 
+                  to={link.path} 
+                  style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.3s ease' }}
                   onMouseOver={(e) => e.target.style.color = '#16a34a'}
                   onMouseOut={(e) => e.target.style.color = '#94a3b8'}
                 >
-                  {page === 'homepage' ? 'Home' : page.replace('-', ' ')}
-                </a>
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>

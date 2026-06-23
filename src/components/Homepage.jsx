@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { SERVICES_DATA } from '../servicesData';
 import { ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
-
-const SLIDES = [
-  '/slide1.png',
-  '/slide2.png',
-  '/slide3.png'
-];
 
 const FAQS = [
   {
@@ -27,7 +22,7 @@ const FAQS = [
   }
 ];
 
-function Homepage({ onSelectService, onNavigate, settings, services }) {
+function Homepage({ settings, services }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
@@ -177,13 +172,13 @@ function Homepage({ onSelectService, onNavigate, settings, services }) {
             >
               <span>Explore Services</span>
             </button>
-            <button 
+            <Link 
               className="btn btn-secondary" 
-              onClick={() => onNavigate('contact')}
-              style={{ padding: '0.85rem 2rem', fontSize: '1.05rem' }}
+              to="/contact"
+              style={{ padding: '0.85rem 2rem', fontSize: '1.05rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
             >
               <span>Talk to Broker</span>
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -210,11 +205,11 @@ function Homepage({ onSelectService, onNavigate, settings, services }) {
           gap: '2.5rem'
         }}>
           {servicesList.map((service) => (
-            <div 
+            <Link 
               key={service.id} 
+              to={`/product/${service.id}`}
               className="service-card"
-              onClick={() => onSelectService(service.id)}
-              style={{ padding: '0', overflow: 'hidden' }}
+              style={{ padding: '0', overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
             >
               {/* Card Image Block */}
               <div className="card-image-box" style={{
@@ -255,7 +250,7 @@ function Homepage({ onSelectService, onNavigate, settings, services }) {
                   <ArrowRight size={14} />
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

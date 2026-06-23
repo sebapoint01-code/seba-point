@@ -33,6 +33,33 @@ export function activateLocalFallback() {
     return name + 's';
   };
 
+  mongoose.Model.insertMany = function(arr) {
+    const collectionName = getCollectionName(this);
+    const db = readDb();
+    if (!db[collectionName]) db[collectionName] = [];
+    
+    const ModelClass = this;
+    const instances = arr.map(item => {
+      const plainObj = JSON.parse(JSON.stringify(item));
+      if (!plainObj._id) {
+        plainObj._id = Math.random().toString(36).substring(2, 9);
+      }
+      if (!plainObj.createdAt) {
+        plainObj.createdAt = new Date().toISOString();
+      }
+      plainObj.updatedAt = new Date().toISOString();
+      db[collectionName].push(plainObj);
+      return new ModelClass(plainObj);
+    });
+    
+    writeDb(db);
+    return {
+      then: function(resolve) {
+        return Promise.resolve(resolve(instances));
+      }
+    };
+  };
+
   mongoose.Model.find = function(query = {}) {
     const collectionName = getCollectionName(this);
     const db = readDb();
