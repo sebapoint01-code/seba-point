@@ -7,6 +7,7 @@ import invoiceRouter from './routes/invoices.js';
 import authRouter from './routes/auth.js';
 import configRouter from './routes/config.js';
 import servicesRouter from './routes/services.js';
+import { activateLocalFallback } from './localDb.js';
 
 // Schema imports for seeding
 import User from './models/User.js';
@@ -200,20 +201,30 @@ async function seedDatabase() {
   }
 }
 
+let localFallbackActive = false;
+
 async function connectToDatabase() {
+  if (localFallbackActive) {
+    return;
+  }
   if (cachedDb && mongoose.connection.readyState === 1) {
     return cachedDb;
   }
   const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/sebainvoice';
   
   mongoose.set('strictQuery', true);
-  const conn = await mongoose.connect(dbUri);
-  cachedDb = conn;
-  
-  // Trigger seeding after successful connection
-  await seedDatabase();
-  
-  return cachedDb;
+  try {
+    const conn = await mongoose.connect(dbUri, { serverSelectionTimeoutMS: 2000 });
+    cachedDb = conn;
+    // Trigger seeding after successful connection
+    await seedDatabase();
+    return cachedDb;
+  } catch (err) {
+    console.warn('MongoDB connection failed. Activating local JSON file fallback database...', err.message);
+    activateLocalFallback();
+    localFallbackActive = true;
+    await seedDatabase();
+  }
 }
 
 // Middleware to ensure DB is connected before handling API requests
@@ -237,7 +248,7 @@ app.use('/api/services', servicesRouter);
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'healthy', 
-    databaseState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' 
+    databaseState: localFallbackActive ? 'fallback-local-json' : (mongoose.connection.readyState === 1 ? 'connected' : 'disconnected')
   });
 });
 

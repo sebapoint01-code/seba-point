@@ -16,7 +16,9 @@ import { Wifi, WifiOff } from 'lucide-react';
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
-    const hash = window.location.hash.replace('#', '');
+    let hash = window.location.hash.replace('#', '');
+    if (hash === 'AdminLogin') hash = 'admin-login';
+    if (hash === 'OwnerLogin') hash = 'owner-login';
     if (hash.startsWith('service-detail-')) return 'service-detail';
     const validViews = ['homepage', 'about', 'contact', 'admin-login', 'owner-login', 'admin-panel', 'owner-panel', 'dashboard', 'editor', 'history'];
     return validViews.includes(hash) ? hash : 'homepage';
@@ -128,7 +130,9 @@ function App() {
   // Sync hash changes from browser (back/forward buttons)
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
+      let hash = window.location.hash.replace('#', '');
+      if (hash === 'AdminLogin') hash = 'admin-login';
+      if (hash === 'OwnerLogin') hash = 'owner-login';
       if (hash.startsWith('service-detail-')) {
         setSelectedServiceId(hash.replace('service-detail-', ''));
         setCurrentView('service-detail');
@@ -149,6 +153,10 @@ function App() {
   useEffect(() => {
     if (currentView === 'service-detail' && selectedServiceId) {
       window.history.replaceState(null, '', `#service-detail-${selectedServiceId}`);
+    } else if (currentView === 'admin-login') {
+      window.history.replaceState(null, '', '#AdminLogin');
+    } else if (currentView === 'owner-login') {
+      window.history.replaceState(null, '', '#OwnerLogin');
     } else {
       window.history.replaceState(null, '', `#${currentView}`);
     }
