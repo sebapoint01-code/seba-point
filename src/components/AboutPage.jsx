@@ -12,16 +12,18 @@ function AboutPage({ settings }) {
       
       {/* Header Banner */}
       <section style={{
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-        padding: '5rem 2rem',
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url(${settings?.aboutBanner || '/about_banner.png'})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '6rem 2rem',
         textAlign: 'center',
-        borderBottom: '1px solid #fed7aa'
+        borderBottom: '1px solid #cbd5e1'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', color: '#0f172a', marginBottom: '1rem' }}>
+          <h1 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', color: '#ffffff', marginBottom: '1rem', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
             About {settings?.siteName || 'SebaPoint'}
           </h1>
-          <p style={{ fontSize: '1.15rem', color: '#475569', lineHeight: '1.6' }}>
+          <p style={{ fontSize: '1.25rem', color: '#f1f5f9', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             Learn more about Dhaka's premier trade license brokerage and corporate registration hub.
           </p>
         </div>

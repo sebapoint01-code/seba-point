@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Save, RefreshCw, Upload, Image as ImageIcon } from 'lucide-react';
 
 function PagesCMS({ token, onRefreshConfig }) {
   const [loading, setLoading] = useState(false);
@@ -11,13 +11,27 @@ function PagesCMS({ token, onRefreshConfig }) {
   const [footerPhone, setFooterPhone] = useState('');
   const [footerEmail, setFooterEmail] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
+  const [instagramLink, setInstagramLink] = useState('');
+  const [linkedinLink, setLinkedinLink] = useState('');
+  const [youtubeLink, setYoutubeLink] = useState('');
+  const [twitterLink, setTwitterLink] = useState('');
+  
   const [aboutTitle, setAboutTitle] = useState('');
   const [aboutContent, setAboutContent] = useState('');
+  const [aboutBanner, setAboutBanner] = useState('');
+  
   const [contactAddress, setContactAddress] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactFacebook, setContactFacebook] = useState('');
   const [contactWhatsapp, setContactWhatsapp] = useState('');
+  const [contactBanner, setContactBanner] = useState('');
+
+  const [uploadingAboutBanner, setUploadingAboutBanner] = useState(false);
+  const [uploadingContactBanner, setUploadingContactBanner] = useState(false);
+
+  const aboutFileInput = useRef(null);
+  const contactFileInput = useRef(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -29,13 +43,21 @@ function PagesCMS({ token, onRefreshConfig }) {
           setFooterPhone(data.footerPhone || '');
           setFooterEmail(data.footerEmail || '');
           setFacebookLink(data.socialLinks?.facebook || '');
+          setInstagramLink(data.socialLinks?.instagram || '');
+          setLinkedinLink(data.socialLinks?.linkedin || '');
+          setYoutubeLink(data.socialLinks?.youtube || '');
+          setTwitterLink(data.socialLinks?.twitter || '');
+          
           setAboutTitle(data.aboutTitle || '');
           setAboutContent(data.aboutContent || '');
+          setAboutBanner(data.aboutBanner || '');
+
           setContactAddress(data.contactAddress || '');
           setContactPhone(data.contactPhone || '');
           setContactEmail(data.contactEmail || '');
           setContactFacebook(data.contactFacebook || '');
           setContactWhatsapp(data.contactWhatsapp || '');
+          setContactBanner(data.contactBanner || '');
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -55,6 +77,40 @@ function PagesCMS({ token, onRefreshConfig }) {
     }
   };
 
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', 'image');
+
+    try {
+      if (type === 'aboutBanner') setUploadingAboutBanner(true);
+      if (type === 'contactBanner') setUploadingContactBanner(true);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Upload failed');
+      
+      if (type === 'aboutBanner') setAboutBanner(data.fileUrl);
+      if (type === 'contactBanner') setContactBanner(data.fileUrl);
+
+      showNotification('Banner uploaded successfully!');
+    } catch (err) {
+      showNotification(err.message, true);
+    } finally {
+      if (type === 'aboutBanner') setUploadingAboutBanner(false);
+      if (type === 'contactBanner') setUploadingContactBanner(false);
+      if (e.target) e.target.value = null; // reset input
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -65,14 +121,22 @@ function PagesCMS({ token, onRefreshConfig }) {
       footerAddress,
       footerPhone,
       footerEmail,
-      socialLinks: { facebook: facebookLink },
+      socialLinks: { 
+        facebook: facebookLink,
+        instagram: instagramLink,
+        linkedin: linkedinLink,
+        youtube: youtubeLink,
+        twitter: twitterLink
+      },
       aboutTitle,
       aboutContent,
+      aboutBanner,
       contactAddress,
       contactPhone,
       contactEmail,
       contactFacebook,
-      contactWhatsapp
+      contactWhatsapp,
+      contactBanner
     };
 
     try {
@@ -129,9 +193,29 @@ function PagesCMS({ token, onRefreshConfig }) {
                 <input type="email" className="form-control" value={footerEmail} onChange={(e) => setFooterEmail(e.target.value)} required />
               </div>
             </div>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontWeight: 600, color: '#475569' }}>Facebook Link</label>
+                <input type="url" className="form-control" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} placeholder="https://facebook.com/..." />
+              </div>
+              <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontWeight: 600, color: '#475569' }}>Instagram Link</label>
+                <input type="url" className="form-control" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} placeholder="https://instagram.com/..." />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontWeight: 600, color: '#475569' }}>LinkedIn Link</label>
+                <input type="url" className="form-control" value={linkedinLink} onChange={(e) => setLinkedinLink(e.target.value)} placeholder="https://linkedin.com/..." />
+              </div>
+              <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontWeight: 600, color: '#475569' }}>YouTube Link</label>
+                <input type="url" className="form-control" value={youtubeLink} onChange={(e) => setYoutubeLink(e.target.value)} placeholder="https://youtube.com/..." />
+              </div>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <label style={{ fontWeight: 600, color: '#475569' }}>Facebook Link</label>
-              <input type="url" className="form-control" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} placeholder="https://facebook.com/..." />
+              <label style={{ fontWeight: 600, color: '#475569' }}>Twitter / X Link</label>
+              <input type="url" className="form-control" value={twitterLink} onChange={(e) => setTwitterLink(e.target.value)} placeholder="https://twitter.com/..." />
             </div>
           </div>
         </div>
@@ -141,6 +225,19 @@ function PagesCMS({ token, onRefreshConfig }) {
             About Us Page Customization
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <label style={{ fontWeight: 600, color: '#475569' }}>About Us Banner Image</label>
+              {aboutBanner && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <img src={aboutBanner} alt="About Banner Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                </div>
+              )}
+              <input type="file" accept="image/*" style={{ display: 'none' }} ref={aboutFileInput} onChange={(e) => handleFileUpload(e, 'aboutBanner')} />
+              <button type="button" onClick={() => aboutFileInput.current.click()} disabled={uploadingAboutBanner} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start' }}>
+                {uploadingAboutBanner ? <RefreshCw size={18} className="spin-animation" /> : <Upload size={18} />}
+                <span>{uploadingAboutBanner ? 'Uploading...' : 'Upload New About Banner'}</span>
+              </button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               <label style={{ fontWeight: 600, color: '#475569' }}>Mission & Story Heading</label>
               <input type="text" className="form-control" value={aboutTitle} onChange={(e) => setAboutTitle(e.target.value)} required />
@@ -157,6 +254,19 @@ function PagesCMS({ token, onRefreshConfig }) {
             Contact Page Content
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <label style={{ fontWeight: 600, color: '#475569' }}>Contact Page Banner Image</label>
+              {contactBanner && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <img src={contactBanner} alt="Contact Banner Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                </div>
+              )}
+              <input type="file" accept="image/*" style={{ display: 'none' }} ref={contactFileInput} onChange={(e) => handleFileUpload(e, 'contactBanner')} />
+              <button type="button" onClick={() => contactFileInput.current.click()} disabled={uploadingContactBanner} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start' }}>
+                {uploadingContactBanner ? <RefreshCw size={18} className="spin-animation" /> : <Upload size={18} />}
+                <span>{uploadingContactBanner ? 'Uploading...' : 'Upload New Contact Banner'}</span>
+              </button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               <label style={{ fontWeight: 600, color: '#475569' }}>Support Desk Physical Address</label>
               <input type="text" className="form-control" value={contactAddress} onChange={(e) => setContactAddress(e.target.value)} required />

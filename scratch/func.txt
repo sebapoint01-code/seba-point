@@ -1,0 +1,91 @@
+  const getTemplateText = () => {
+    let attachmentsText = '';
+    if (businessNature === 'sole') {
+      attachmentsText = '  ▫️ ১. মালিকের ছবি\n  ▫️ ২. এনআইডি কার্ডের কপি';
+    } else if (businessNature === 'partnership') {
+      attachmentsText = '  ▫️ ১. সকল অংশীদারের ছবি\n  ▫️ ২. সকল অংশীদারের এনআইডি কপি\n  ▫️ ৩. অংশীদারি চুক্তিপত্র (৪০ পাতা নোটারী সহ)';
+    } else {
+      attachmentsText = '  ▫️ চেয়ারম্যান/ম্যানেজিং ডিরেক্টর এর ছবি ও এনআইডি কপি\n  ▫️ মেমোরেন্ডাম অব অ্যাসোসিয়েশন\n  ▫️ ইনকর্পোরেশন সার্টিফিকেট\n  ▫️ ফরম XII';
+    }
+
+    const isTradeLicense = service.id === 'new-license' || service.id === 'renewal';
+    const isCompanyReg = service.id === 'limited-company';
+
+    return `📝 আবেদনকৃত সেবা: ${service.title}
+━━━━━━━━━━━━━━━━━━━━━━━━
+${isTradeLicense ? '🏢 সিটি কর্পোরেশন: ঢাকা উত্তর / দক্ষিণ সিটি কর্পোরেশন\n🔢 ওয়ার্ড নাম্বারঃ \n💼 ব্যবসার ধরন (Business Type): ' : ''}${isCompanyReg ? '🏷️ প্রস্তাবিত নাম ১: \n🏷️ প্রস্তাবিত নাম ২: \n🏷️ প্রস্তাবিত নাম ৩: \n💰 অনুমোদিত মূলধন (Authorized Capital): \n💵 পরিশোধিত মূলধন (Paid-up Capital): ' : ''}
+🏢 প্রতিষ্ঠানের নাম: 
+👤 মালিক/এমডি নাম: 
+👨 পিতার নাম: 
+👩 মাতার নাম: 
+💼 ব্যবসার প্রকৃতি: ${businessNature === 'sole' ? 'একক মালিকানা' : businessNature === 'partnership' ? 'অংশীদারি ব্যবসা' : 'লিমিটেড কোম্পানি'}
+
+📍 স্থায়ী ঠিকানা (Permanent Address):
+  ▫️ হোল্ডিং নং- 
+  ▫️ রোড নং- 
+  ▫️ গ্রাম/মহল্লাঃ 
+  ▫️ ডাকঘরঃ 
+  ▫️ পোস্ট কোডঃ 
+  ▫️ থানাঃ 
+  ▫️ জেলাঃ 
+  ▫️ বিভাগঃ 
+
+📍 বর্তমান ঠিকানা (Current Address):
+  ▫️ হোল্ডিং নং- 
+  ▫️ রোড নং- 
+  ▫️ গ্রাম/মহল্লাঃ 
+  ▫️ ডাকঘরঃ 
+  ▫️ পোস্ট কোডঃ 
+  ▫️ থানাঃ 
+  ▫️ জেলাঃ 
+  ▫️ বিভাগঃ 
+
+🏢 বিজনেস ঠিকানা (Business Address): 
+
+🪪 জাতীয় পরিচয়পত্র (NID) নম্বর: 
+📞 মোবাইল নম্বর: 
+✉️ ইমেইল: 
+
+📂 প্রয়োজনীয় সংযুক্তি (Required Attachments):
+${attachmentsText}
+━━━━━━━━━━━━━━━━━━━━━━━━`;
+  };��লধন (Authorized Capital): \nপরিশোধিত মূলধন (Paid-up Capital): ' : ''}
+প্রতিষ্ঠানের নাম: 
+মালিকের নাম/এমডি নাম: 
+পিতার নাম: 
+মাতার নাম: 
+বিজনেস প্রকৃতি: ${businessNature === 'sole' ? 'একক মালিকানা' : businessNature === 'partnership' ? 'অংশীদারি ব্যবসা' : 'লিমিটেড কোম্পানি'}
+
+*স্থায়ী ঠিকানা:*  
+হোল্ডিং নং- 
+রোড- 
+গ্রাম/মহল্লাঃ 
+ডাকঘরঃ 
+পোস্ট কোডঃ 
+থানাঃ 
+জেলাঃ 
+বিভাগঃ 
+
+*বর্তমান ঠিকানা:* 
+হোল্ডিং নং- 
+রোড- 
+গ্রাম/মহল্লাঃ 
+ডাকঘরঃ 
+পোস্ট কোডঃ 
+থানাঃ 
+জেলাঃ 
+বিভাগঃ 
+
+বিজনেস ঠিকানা (Business Address): 
+
+জাতীয় পরিচয়পত্র (NID) নম্বর: 
+মোবাইল নম্বর: 
+ইমেইল: 
+
+সংযুক্তি (Required Attachments):
+${attachmentsText}`;
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(getTemplateText());
+    setCopied(true);

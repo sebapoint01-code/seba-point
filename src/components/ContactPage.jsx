@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, MapPin, Facebook, MessageCircle, ExternalLink } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, MessageCircle, ExternalLink, Instagram, Linkedin, Youtube, Twitter } from 'lucide-react';
 
 function ContactPage({ settings }) {
   const address = settings?.contactAddress || 'NE3, House-16, Road-10, Gulshan-1, Dhaka-1212, Bangladesh';
@@ -7,25 +7,57 @@ function ContactPage({ settings }) {
   const email = settings?.contactEmail || 'sebapoint01@gmail.com';
   const facebookUrl = settings?.contactFacebook || 'https://www.facebook.com/sebapoint';
   const whatsappNumber = settings?.contactWhatsapp || '+880 1813-884475';
+  const socialLinks = settings?.socialLinks || {};
   
   // Format whatsapp URL: remove spaces, pluses, dashes
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
+
+  const renderSocialIcon = (platform, url) => {
+    if (!url) return null;
+    const icons = {
+      facebook: <Facebook size={24} />,
+      instagram: <Instagram size={24} />,
+      linkedin: <Linkedin size={24} />,
+      youtube: <Youtube size={24} />,
+      twitter: <Twitter size={24} />
+    };
+    return (
+      <a 
+        key={platform}
+        href={url} 
+        target="_blank" 
+        rel="noreferrer"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: '48px', height: '48px', borderRadius: '50%',
+          backgroundColor: '#f0fdf4', color: '#16a34a',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#16a34a'; e.currentTarget.style.color = '#ffffff'; }}
+        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#f0fdf4'; e.currentTarget.style.color = '#16a34a'; }}
+      >
+        {icons[platform]}
+      </a>
+    );
+  };
 
   return (
     <div className="contact-page" style={{ paddingTop: '5.5rem' }}>
       
       {/* Header Banner */}
       <section style={{
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-        padding: '5rem 2rem',
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url(${settings?.contactBanner || '/contact_banner.png'})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '6rem 2rem',
         textAlign: 'center',
-        borderBottom: '1px solid #fed7aa'
+        borderBottom: '1px solid #cbd5e1'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', color: '#0f172a', marginBottom: '1rem' }}>
-            Contact SebaPoint
+          <h1 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', color: '#ffffff', marginBottom: '1rem', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+            Contact {settings?.siteName || 'SebaPoint'}
           </h1>
-          <p style={{ fontSize: '1.15rem', color: '#475569', lineHeight: '1.6' }}>
+          <p style={{ fontSize: '1.25rem', color: '#f1f5f9', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             Get in touch with our document processing desk for swift trade license solutions.
           </p>
         </div>
@@ -92,7 +124,8 @@ function ContactPage({ settings }) {
             display: 'flex',
             justifyContent: 'center',
             gap: '2rem',
-            flexWrap: 'wrap'
+            flexWrap: 'wrap',
+            marginBottom: '3rem'
           }}>
             <a 
               href={facebookUrl} 
@@ -104,20 +137,20 @@ function ContactPage({ settings }) {
                 gap: '0.75rem',
                 color: '#16a34a',
                 textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: '1rem',
-                padding: '0.75rem 1.5rem',
-                border: '1px solid #16a34a',
-                borderRadius: '8px',
+                fontWeight: 800,
+                fontSize: '1.25rem',
+                padding: '1rem 2rem',
+                border: '2px solid #16a34a',
+                borderRadius: '12px',
                 transition: 'all 0.3s ease'
               }}
               className="facebook-link-hover"
               onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f0fdf4'; }}
               onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
-              <Facebook size={22} fill="#16a34a" />
+              <Facebook size={26} fill="#16a34a" />
               <span>Facebook Page</span>
-              <ExternalLink size={14} />
+              <ExternalLink size={18} />
             </a>
 
             <a 
@@ -130,22 +163,39 @@ function ContactPage({ settings }) {
                 gap: '0.75rem',
                 color: '#16a34a',
                 textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: '1rem',
-                padding: '0.75rem 1.5rem',
-                border: '1px solid #16a34a',
-                borderRadius: '8px',
+                fontWeight: 800,
+                fontSize: '1.25rem',
+                padding: '1rem 2rem',
+                border: '2px solid #16a34a',
+                borderRadius: '12px',
                 transition: 'all 0.3s ease'
               }}
               className="facebook-link-hover"
               onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f0fdf4'; }}
               onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
-              <MessageCircle size={22} fill="#16a34a" color="#ffffff" style={{ strokeWidth: 1.5 }} />
+              <MessageCircle size={26} fill="#16a34a" color="#ffffff" style={{ strokeWidth: 1.5 }} />
               <span>Chat on WhatsApp</span>
-              <ExternalLink size={14} />
+              <ExternalLink size={18} />
             </a>
           </div>
+
+          {/* Social Links Icons */}
+          {Object.keys(socialLinks).length > 0 && (
+            <div style={{ 
+              borderTop: '1px solid var(--border-color)', 
+              paddingTop: '2.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}>
+              <h3 style={{ fontSize: '1.5rem', color: '#0f172a', marginBottom: '1.5rem', fontFamily: 'var(--font-display)' }}>Connect With Us</h3>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                 {Object.entries(socialLinks).map(([platform, url]) => renderSocialIcon(platform, url))}
+              </div>
+            </div>
+          )}
+
         </div>
       </section>
 

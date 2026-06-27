@@ -35,7 +35,11 @@ const webSettingsSchema = new mongoose.Schema({
     default: '' 
   },
   socialLinks: {
-    facebook: { type: String, default: '' }
+    facebook: { type: String, default: '' },
+    instagram: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+    youtube: { type: String, default: '' },
+    twitter: { type: String, default: '' }
   },
   aboutTitle: { 
     type: String, 
@@ -43,27 +47,35 @@ const webSettingsSchema = new mongoose.Schema({
   },
   aboutContent: { 
     type: String, 
-    default: '' 
+    default: 'Starting a business in Bangladesh should be exciting... (default text)' 
+  },
+  aboutBanner: {
+    type: String,
+    default: '/about_banner.png'
   },
   contactAddress: { 
     type: String, 
-    default: '' 
+    default: 'NE3, House-16, Road-10, Gulshan-1, Dhaka-1212, Bangladesh' 
   },
   contactPhone: { 
     type: String, 
-    default: '' 
+    default: '01813-884475' 
   },
   contactEmail: { 
     type: String, 
-    default: '' 
+    default: 'sebapoint01@gmail.com' 
   },
   contactFacebook: { 
     type: String, 
-    default: '' 
+    default: 'https://www.facebook.com/sebapoint' 
   },
   contactWhatsapp: { 
     type: String, 
-    default: '' 
+    default: '+880 1813-884475' 
+  },
+  contactBanner: {
+    type: String,
+    default: '/contact_banner.png'
   },
   seo: {
     homepage: { type: pageSeoSchema, default: () => ({}) },

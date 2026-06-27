@@ -9,11 +9,9 @@ export const SERVICES_DATA = [
     brokerFee: '৳1,500',
     timeline: '3 - 5 Business Days',
     documents: [
-      'Copy of National ID (NID) of owner',
-      'Recent Passport-sized Photo (3 copies)',
-      'Rental Agreement of commercial space',
-      'Holding Tax Receipt of landlord',
-      'Holding Utility Bill (copy)'
+      'একক মালিকানা: ছবি ও এনআইডি কপি',
+      'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+      'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
     ]
   },
   {
@@ -26,10 +24,9 @@ export const SERVICES_DATA = [
     brokerFee: '৳1,000',
     timeline: '2 - 3 Business Days',
     documents: [
-      'Original copy of the previous Trade License',
-      'TIN Certificate (Tax Identification Number)',
-      'Holding Tax paid receipt (if applicable)',
-      'Challan/Bank receipt of previous payment'
+      'একক মালিকানা: ছবি ও এনআইডি কপি',
+      'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+      'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
     ]
   },
   {
@@ -42,10 +39,9 @@ export const SERVICES_DATA = [
     brokerFee: '৳5,000',
     timeline: '7 - 10 Business Days',
     documents: [
-      'Proposed Company Names (for clearance)',
-      'NID and Photos of all directors (minimum 2 for LTD, 1 for OPC)',
-      'TIN Certificates of all directors',
-      'Shareholding ratio & authorized capital details'
+      'একক মালিকানা: ছবি ও এনআইডি কপি',
+      'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+      'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
     ]
   },
   {
@@ -58,9 +54,9 @@ export const SERVICES_DATA = [
     brokerFee: '৳1,000',
     timeline: '1 - 2 Business Days',
     documents: [
-      'Copy of NID and Trade License',
-      'Owner phone number (linked to NID)',
-      'Company incorporation papers (if Limited)'
+      'একক মালিকানা: ছবি ও এনআইডি কপি',
+      'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+      'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
     ]
   },
   {
@@ -73,10 +69,9 @@ export const SERVICES_DATA = [
     brokerFee: '৳4,500',
     timeline: '5 - 7 Business Days',
     documents: [
-      'Valid Trade License copy',
-      'Valid TIN & VAT (BIN) certificates',
-      'Bank Solvency Certificate & solvency profile',
-      'Membership Certificate from local Chamber of Commerce'
+      'একক মালিকানা: ছবি ও এনআইডি কপি',
+      'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+      'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
     ]
   },
   {
@@ -89,10 +84,9 @@ export const SERVICES_DATA = [
     brokerFee: '৳3,500',
     timeline: '10 - 15 Business Days',
     documents: [
-      'Trade License copy',
-      'Emergency fire safety plan map/layout',
-      'DoE Form/No-Objection Certificate (NOC)',
-      'Landlord holding agreement'
+      'একক মালিকানা: ছবি ও এনআইডি কপি',
+      'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+      'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
     ]
   }
 ];

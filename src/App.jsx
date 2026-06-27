@@ -91,16 +91,6 @@ function AppContent() {
 
   // Initial Data Load
   useEffect(() => {
-    // Development auto-login bypass (only on localhost)
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      const loggedOut = localStorage.getItem('seba_logged_out');
-      if (!localStorage.getItem('seba_token') && !loggedOut) {
-        localStorage.setItem('seba_token', 'dev-bypass-token');
-        localStorage.setItem('seba_user', JSON.stringify({ email: 'owner@sebapoint.com', role: 'owner' }));
-        setToken('dev-bypass-token');
-        setUser({ email: 'owner@sebapoint.com', role: 'owner' });
-      }
-    }
     fetchSettings();
     fetchInvoices();
   }, []);
@@ -181,14 +171,18 @@ function AppContent() {
 
   // Authentication Guards
   const AdminRoute = () => {
-    if (!token || (user?.role !== 'admin' && user?.role !== 'owner')) {
+    const currentToken = token || localStorage.getItem('seba_token');
+    const currentUser = user || JSON.parse(localStorage.getItem('seba_user') || 'null');
+    if (!currentToken || (currentUser?.role !== 'admin' && currentUser?.role !== 'owner')) {
       return <Navigate to="/adminlogin" replace />;
     }
     return <Outlet />;
   };
 
   const OwnerRoute = () => {
-    if (!token || user?.role !== 'owner') {
+    const currentToken = token || localStorage.getItem('seba_token');
+    const currentUser = user || JSON.parse(localStorage.getItem('seba_user') || 'null');
+    if (!currentToken || currentUser?.role !== 'owner') {
       return <Navigate to="/ownerlogin" replace />;
     }
     return <Outlet />;
@@ -210,7 +204,7 @@ function AppContent() {
         <Route path="/home" element={<Homepage settings={settings} services={services} />} />
         <Route path="/about" element={<AboutPage settings={settings} />} />
         <Route path="/contact" element={<ContactPage settings={settings} />} />
-        <Route path="/product/:id" element={<ServiceDetailPage services={services} />} />
+        <Route path="/product/:id" element={<ServiceDetailPage services={services} settings={settings} />} />
       </Route>
 
       {/* Auth Routes */}
@@ -219,7 +213,7 @@ function AppContent() {
 
       {/* Admin Panel (CMS) nested paths */}
       <Route path="/admin-panel" element={<AdminRoute />}>
-        <Route element={<AdminPanel token={token} user={user} onLogout={handleLogout} />}>
+        <Route element={<AdminPanel token={token} user={user} onLogout={handleLogout} settings={settings} />}>
           <Route index element={<SliderLogoCMS token={token} onRefreshConfig={fetchSettings} />} />
           <Route path="pages" element={<PagesCMS token={token} onRefreshConfig={fetchSettings} />} />
           <Route path="services" element={<ServicesCMS token={token} />} />
@@ -281,15 +275,15 @@ function AppContent() {
                 <span>Database Live</span>
               </div>
             )}
-            <OwnerPanel user={user} onLogout={handleLogout} />
+            <OwnerPanel user={user} onLogout={handleLogout} settings={settings} />
           </div>
         }>
-          <Route index element={<BillingPortalTab invoices={invoices} totalRevenue={totalRevenue} />} />
+          <Route index element={<BillingPortalTab invoices={invoices} totalRevenue={totalRevenue} onEditInvoice={handleEditInvoice} onRefresh={fetchInvoices} />} />
           <Route path="stats" element={<InvoiceStatsTab invoices={invoices} />} />
           <Route path="employees" element={<EmployeeManagementTab token={token} />} />
           <Route path="invoices" element={<InvoiceHistory invoices={invoices} onEditInvoice={handleEditInvoice} onRefresh={fetchInvoices} />} />
-          <Route path="invoices/new" element={<InvoiceForm invoice={null} onSave={handleInvoiceSaved} onCancel={() => navigate('/owner-panel')} invoices={invoices} />} />
-          <Route path="invoices/edit" element={<InvoiceForm invoice={selectedInvoice} onSave={handleInvoiceSaved} onCancel={() => navigate('/owner-panel')} invoices={invoices} />} />
+          <Route path="invoices/new" element={<InvoiceForm invoice={null} onSave={handleInvoiceSaved} onCancel={() => navigate('/owner-panel')} invoices={invoices} settings={settings} />} />
+          <Route path="invoices/edit" element={<InvoiceForm invoice={selectedInvoice} onSave={handleInvoiceSaved} onCancel={() => navigate('/owner-panel')} invoices={invoices} settings={settings} />} />
           <Route path="cms" element={<Navigate to="/admin-panel" replace />} />
         </Route>
       </Route>

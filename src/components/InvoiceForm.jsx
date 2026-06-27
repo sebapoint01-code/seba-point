@@ -1,54 +1,84 @@
 import React, { useState, useEffect } from 'react';
 import InvoicePreview from './InvoicePreview';
 import { 
-  Trash2, Plus, Save, X, Calendar, DollarSign, Settings2, FileText, Building2, User 
+  Trash2, Plus, Save, X, Calendar, DollarSign, Settings2, FileText, Building2, User, Lock, CheckCircle 
 } from 'lucide-react';
 
 const DEFAULT_SENDER_KEY = 'seba_invoice_default_sender';
 const DRAFT_KEY = 'seba_invoice_form_draft';
 
-function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
-  // Try to load initial state:
-  // 1. If we are editing an existing invoice, use it.
-  // 2. If not, check if there's a draft in localStorage.
-  // 3. Otherwise, use fresh defaults.
+function InvoiceForm({ invoice, onSave, onCancel, invoices, settings }) {
+  // Determine if this invoice is finalized and locked
+  const isLocked = invoice && invoice.status !== 'Draft';
+
   const getInitialState = () => {
+    const brandLogo = settings?.logo || '/logo.png';
+
     if (invoice) {
-      // Format dates properly for input fields (YYYY-MM-DD)
-      return {
+      const prep = {
         ...invoice,
         issueDate: invoice.issueDate ? invoice.issueDate.split('T')[0] : '',
         dueDate: invoice.dueDate ? invoice.dueDate.split('T')[0] : ''
       };
+      if (prep.sender && !prep.sender.logoUrl) {
+        prep.sender.logoUrl = brandLogo;
+      }
+      return prep;
     }
 
     const savedDraft = localStorage.getItem(DRAFT_KEY);
     if (savedDraft) {
       try {
-        return JSON.parse(savedDraft);
+        const parsed = JSON.parse(savedDraft);
+        if (parsed.sender && !parsed.sender.logoUrl) {
+          parsed.sender.logoUrl = brandLogo;
+        }
+        // Ensure default items list isn't empty
+        if (!parsed.items || parsed.items.length === 0) {
+          parsed.items = [{ description: 'TL', quantity: 1, unitPrice: 3500, taxRate: 0, discount: 0, amount: 3500 }];
+        }
+        return parsed;
       } catch (e) {
         console.error('Failed to parse draft, resetting defaults', e);
       }
     }
 
-    // Default sender info from history or empty
     const savedDefaultSender = localStorage.getItem(DEFAULT_SENDER_KEY);
-    const defaultSender = savedDefaultSender ? JSON.parse(savedDefaultSender) : {
-      name: '',
-      email: '',
-      address: '',
-      phone: '',
-      logoUrl: '',
-      taxId: ''
-    };
+    let defaultSender = savedDefaultSender ? JSON.parse(savedDefaultSender) : null;
+    
+    // If it's the old hardcoded name or empty, force the new requested defaults
+    if (!defaultSender || defaultSender.name === 'HAFEEZ MD ABDUR RASHID KHAN') {
+      defaultSender = {
+        name: 'Seba Point',
+        email: 'sebapoint01@gmail.com',
+        address: 'Bonani Dhaka 1203 Bangladesh',
+        phone: '01813884475',
+        logoUrl: brandLogo,
+        taxId: ''
+      };
+    }
+    
+    // Ensure logoUrl is not empty
+    if (!defaultSender.logoUrl) {
+      defaultSender.logoUrl = brandLogo;
+    }
 
-    // Calculate a safe default invoice number
-    const count = invoices.length + 1;
+    // Logical sequential invoice numbering
+    let maxNum = 0;
+    if (invoices && invoices.length > 0) {
+      invoices.forEach(inv => {
+        const numPart = parseInt(inv.invoiceNumber.replace(/[^\d]/g, ''), 10);
+        if (!isNaN(numPart) && numPart > maxNum) {
+          maxNum = numPart;
+        }
+      });
+    }
+    const nextNum = maxNum > 0 ? maxNum + 1 : 1;
     const pad = (num, size) => {
       let s = "0000" + num;
       return s.substring(s.length - size);
     };
-    const suggestedNum = `INV-${pad(count, 4)}`;
+    const suggestedNum = `INV-${pad(nextNum, 4)}`;
 
     const today = new Date().toISOString().split('T')[0];
     const twoWeeksLater = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -58,7 +88,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
       issueDate: today,
       dueDate: twoWeeksLater,
       paymentTerms: 'Net 14',
-      currency: 'USD',
+      currency: 'BDT',
       accentColor: '#16a34a',
       sender: defaultSender,
       client: {
@@ -75,14 +105,14 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
       globalTaxRate: 0,
       taxName: 'Tax',
       shippingFee: 0,
-      subtotal: 0,
+      subtotal: 3500,
       discountTotal: 0,
       taxTotal: 0,
-      total: 0,
-      amountPaid: 0,
+      total: 3500,
+      amountPaid: 3500,
       balanceDue: 0,
-      status: 'Unpaid',
-      notes: '',
+      status: 'Draft', // Default status is draft
+      notes: 'Thank you for your business.',
       terms: ''
     };
   };
@@ -91,15 +121,66 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
   const [logoInput, setLogoInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmPhrase, setConfirmPhrase] = useState('');
 
-  // Auto-save draft in localStorage (only if not editing an existing invoice)
+  // Auto-save draft locally (only if not editing an existing invoice and not locked)
   useEffect(() => {
-    if (!invoice) {
+    if (!invoice && !isLocked) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(invoiceData));
     }
-  }, [invoiceData, invoice]);
+  }, [invoiceData, invoice, isLocked]);
 
-  // Recalculate totals whenever invoice items, discounts, taxes or fees change
+  // Update default logo when settings load asynchronously
+  useEffect(() => {
+    if (settings?.logo && !invoice) {
+      setInvoiceData(prev => ({
+        ...prev,
+        sender: {
+          ...prev.sender,
+          logoUrl: settings.logo // Always use the latest CMS brand logo for new invoices
+        }
+      }));
+    }
+  }, [settings, invoice]);
+
+  // Auto-calculate Due Date based on Issue Date and Payment Terms
+  useEffect(() => {
+    if (!invoiceData.issueDate || isLocked) return;
+    
+    const issue = new Date(invoiceData.issueDate);
+    if (isNaN(issue.getTime())) return;
+    
+    let daysToAdd = 0;
+    switch (invoiceData.paymentTerms) {
+      case 'Net 7':
+        daysToAdd = 7;
+        break;
+      case 'Net 14':
+        daysToAdd = 14;
+        break;
+      case 'Net 30':
+        daysToAdd = 30;
+        break;
+      case 'Net 60':
+        daysToAdd = 60;
+        break;
+      case 'Due on Receipt':
+      default:
+        daysToAdd = 0;
+        break;
+    }
+    
+    const due = new Date(issue.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+    const dueStr = due.toISOString().split('T')[0];
+    
+    setInvoiceData(prev => {
+      if (prev.dueDate === dueStr) return prev;
+      return { ...prev, dueDate: dueStr };
+    });
+  }, [invoiceData.issueDate, invoiceData.paymentTerms, isLocked]);
+
+  // Recalculate totals
   useEffect(() => {
     const calculatedItems = invoiceData.items.map(item => {
       const qty = parseFloat(item.quantity) || 0;
@@ -107,12 +188,9 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
       const discountPct = parseFloat(item.discount) || 0;
       const taxPct = parseFloat(item.taxRate) || 0;
 
-      // Base total for item
       let base = qty * price;
-      // Item discount
       let discVal = base * (discountPct / 100);
       let afterDiscount = base - discVal;
-      // Item tax
       let taxVal = afterDiscount * (taxPct / 100);
       let finalAmount = afterDiscount + taxVal;
 
@@ -123,14 +201,9 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     });
 
     const subtotal = calculatedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    
-    // Apply global discount
     const globalDiscount = subtotal * ((parseFloat(invoiceData.globalDiscountRate) || 0) / 100);
     const afterGlobalDiscount = subtotal - globalDiscount;
-    
-    // Apply global tax
     const globalTax = afterGlobalDiscount * ((parseFloat(invoiceData.globalTaxRate) || 0) / 100);
-    
     const shipping = parseFloat(invoiceData.shippingFee) || 0;
     const grandTotal = afterGlobalDiscount + globalTax + shipping;
     
@@ -138,7 +211,6 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     const amountPaid = parseFloat(invoiceData.amountPaid) || 0;
     const balanceDue = Math.max(0, Math.round((total - amountPaid) * 100) / 100);
 
-    // Update state without causing infinite loop
     setInvoiceData(prev => ({
       ...prev,
       items: calculatedItems.map((item, idx) => ({
@@ -159,8 +231,8 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     invoiceData.amountPaid
   ]);
 
-  // Handle nested object input changes (sender, client)
   const handleNestedChange = (section, field, value) => {
+    if (isLocked) return;
     setInvoiceData(prev => ({
       ...prev,
       [section]: {
@@ -170,15 +242,15 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     }));
   };
 
-  // Handle item input updates
   const handleItemChange = (index, field, value) => {
+    if (isLocked) return;
     const newItems = [...invoiceData.items];
     newItems[index][field] = value;
     setInvoiceData(prev => ({ ...prev, items: newItems }));
   };
 
-  // Add line item row
   const handleAddItem = () => {
+    if (isLocked) return;
     setInvoiceData(prev => ({
       ...prev,
       items: [
@@ -188,15 +260,15 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     }));
   };
 
-  // Remove line item row
   const handleRemoveItem = (index) => {
-    if (invoiceData.items.length === 1) return; // Keep at least one row
+    if (isLocked) return;
+    if (invoiceData.items.length === 1) return;
     const newItems = invoiceData.items.filter((_, idx) => idx !== index);
     setInvoiceData(prev => ({ ...prev, items: newItems }));
   };
 
-  // Logo upload processing
   const handleLogoUpload = (e) => {
+    if (isLocked) return;
     const file = e.target.files[0];
     if (!file) return;
 
@@ -212,14 +284,14 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     reader.readAsDataURL(file);
   };
 
-  // Remove uploaded logo
   const handleRemoveLogo = (e) => {
+    if (isLocked) return;
     e.stopPropagation();
     handleNestedChange('sender', 'logoUrl', '');
   };
 
-  // Save to Database
-  const handleSaveInvoice = async () => {
+  // Base Save Function
+  const saveInvoiceToDatabase = async (statusToSave) => {
     if (!invoiceData.invoiceNumber.trim()) {
       setErrorMsg('Invoice number is required.');
       return;
@@ -237,60 +309,135 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
     setErrorMsg('');
 
     try {
-      // Save sender as default for next time
-      localStorage.setItem(DEFAULT_SENDER_KEY, JSON.stringify(invoiceData.sender));
+      if (statusToSave === 'Draft') {
+        localStorage.setItem(DEFAULT_SENDER_KEY, JSON.stringify(invoiceData.sender));
+      }
 
       const method = invoice ? 'PUT' : 'POST';
       const url = invoice ? `/api/invoices/${invoice._id}` : '/api/invoices';
 
+      const payload = {
+        ...invoiceData,
+        status: statusToSave
+      };
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(invoiceData)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
 
       const result = await response.json();
-
       if (!response.ok) {
         throw new Error(result.error || 'Failed to save invoice');
       }
 
-      // Success - remove local draft cache
       localStorage.removeItem(DRAFT_KEY);
       onSave();
     } catch (err) {
       console.error(err);
-      setErrorMsg(err.message || 'Server connection failed. Could not save to database.');
+      setErrorMsg(err.message || 'Server connection failed. Could not save.');
     } finally {
       setIsSaving(false);
     }
   };
 
+  // 1. Action: Save as Draft
+  const handleSaveDraft = () => {
+    saveInvoiceToDatabase('Draft');
+  };
+
+  // 2. Action: Trigger finalization workflow
+  const triggerFinalization = () => {
+    if (!invoiceData.invoiceNumber.trim()) {
+      setErrorMsg('Invoice number is required.');
+      return;
+    }
+    if (!invoiceData.client.name.trim()) {
+      setErrorMsg('Client name is required.');
+      return;
+    }
+    if (invoiceData.items.some(item => !item.description.trim())) {
+      setErrorMsg('Please describe all line items.');
+      return;
+    }
+    setErrorMsg('');
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmFinalize = () => {
+    if (confirmPhrase !== 'CONFIRM') return;
+    setShowConfirmModal(false);
+    // Finalize status: default to Unpaid if it was Draft, otherwise keep selected (Paid/Unpaid/Overdue)
+    const status = invoiceData.status === 'Draft' ? 'Unpaid' : invoiceData.status;
+    saveInvoiceToDatabase(status);
+  };
+
   return (
     <div className="invoice-editor-view">
-      {/* Header */}
-      <div className="page-header no-print">
-        <div className="page-title">
-          <h1>{invoice ? `Edit Invoice ${invoice.invoiceNumber}` : 'Create New Invoice'}</h1>
-          <p>Configure layouts, calculations, client details, and generate PDFs.</p>
+      
+      {/* Locked Notice Banner */}
+      {isLocked && (
+        <div style={{
+          backgroundColor: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          color: '#1e3a8a',
+          padding: '1rem 1.25rem',
+          borderRadius: '12px',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontWeight: 600
+        }} className="no-print">
+          <Lock size={18} />
+          <span>This invoice is finalized and locked. You can view, print, or download PDF, but edits are disabled.</span>
         </div>
+      )}
+
+      {/* Sticky Action Bar */}
+      <div className="sticky-action-bar no-print">
+        <div className="page-title" style={{ margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {isLocked && <Lock size={20} style={{ color: '#64748b' }} />}
+            <h1 style={{ margin: 0, fontSize: '1.4rem' }}>
+              {invoice ? `${isLocked ? 'View' : 'Edit'} Invoice ${invoice.invoiceNumber}` : 'Create New Invoice'}
+            </h1>
+          </div>
+        </div>
+        
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn btn-secondary" onClick={onCancel}>
+          <button className="btn btn-secondary" onClick={onCancel} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <X size={16} />
-            <span>Cancel</span>
+            <span className="hidden-xs">Cancel</span>
           </button>
-          <button 
-            className="btn btn-primary" 
-            onClick={handleSaveInvoice}
-            disabled={isSaving}
-          >
-            <Save size={16} />
-            <span>{isSaving ? 'Saving...' : 'Save Invoice'}</span>
-          </button>
+          
+          {!isLocked && (
+            <>
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleSaveDraft}
+                disabled={isSaving}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', borderColor: '#cbd5e1' }}
+              >
+                <Save size={16} />
+                <span className="hidden-xs">Save Draft</span>
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={triggerFinalization}
+                disabled={isSaving}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', backgroundColor: '#16a34a', border: '1px solid #16a34a' }}
+              >
+                <CheckCircle size={16} />
+                <span className="hidden-xs">Confirm</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+
 
       {errorMsg && (
         <div className="no-print" style={{
@@ -300,20 +447,20 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
           padding: '0.75rem 1.25rem',
           borderRadius: '8px',
           marginBottom: '1.5rem',
-          fontWeight: 500
+          fontWeight: 650
         }}>
           {errorMsg}
         </div>
       )}
 
-      {/* Grid: Form on Left, Live Preview on Right */}
+      {/* Stack: Form on Top, Live Preview on Bottom */}
       <div className="invoice-grid">
         
-        {/* Left Side: Editor Form */}
-        <div className="form-card no-print" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        {/* Editor Form */}
+        <div className="form-sections no-print" style={{ opacity: isLocked ? 0.85 : 1 }}>
           
           {/* Section: Logo & Layout */}
-          <div>
+          <div className="premium-card">
             <div className="form-section-title">
               <Settings2 size={16} />
               <span>Branding & General Options</span>
@@ -321,18 +468,23 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
             <div className="form-row">
               <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label>Upload Logo</label>
-                <div className="logo-uploader" onClick={() => document.getElementById('logo-file-input').click()}>
+                <div 
+                  className="logo-uploader" 
+                  onClick={() => !isLocked && document.getElementById('logo-file-input').click()}
+                  style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                >
                   <input 
                     type="file" 
                     id="logo-file-input" 
                     accept="image/*" 
                     onChange={handleLogoUpload} 
                     style={{ display: 'none' }}
+                    disabled={isLocked}
                   />
                   {invoiceData.sender.logoUrl ? (
                     <div className="logo-preview-container">
                       <img src={invoiceData.sender.logoUrl} alt="Logo preview" />
-                      <button type="button" onClick={handleRemoveLogo}>✕</button>
+                      {!isLocked && <button type="button" onClick={handleRemoveLogo}>✕</button>}
                     </div>
                   ) : (
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -348,7 +500,8 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.accentColor} 
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, accentColor: e.target.value }))}
-                  style={{ height: '44px', padding: '4px', cursor: 'pointer' }}
+                  style={{ height: '44px', padding: '4px', cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -357,14 +510,13 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.currency}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, currency: e.target.value }))}
+                  disabled={isLocked}
                 >
+                  <option value="BDT">BDT (৳)</option>
+                  <option value="INR">INR (₹)</option>
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="GBP">GBP (£)</option>
-                  <option value="AUD">AUD ($)</option>
-                  <option value="CAD">CAD ($)</option>
-                  <option value="INR">INR (₹)</option>
-                  <option value="SGD">SGD ($)</option>
                 </select>
               </div>
             </div>
@@ -377,6 +529,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="e.g. INV-1001" 
                   value={invoiceData.invoiceNumber}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -385,6 +538,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.paymentTerms}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, paymentTerms: e.target.value }))}
+                  disabled={isLocked}
                 >
                   <option value="Due on Receipt">Due on Receipt</option>
                   <option value="Net 7">Net 7</option>
@@ -400,6 +554,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.issueDate}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, issueDate: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -409,13 +564,14 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.dueDate}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, dueDate: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
             </div>
           </div>
 
           {/* Section: Sender Info */}
-          <div>
+          <div className="premium-card">
             <div className="form-section-title">
               <Building2 size={16} />
               <span>Bill From (Your Business)</span>
@@ -429,6 +585,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="ACME Corp" 
                   value={invoiceData.sender.name}
                   onChange={(e) => handleNestedChange('sender', 'name', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -439,6 +596,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="billing@acme.com" 
                   value={invoiceData.sender.email}
                   onChange={(e) => handleNestedChange('sender', 'email', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -452,6 +610,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   value={invoiceData.sender.address}
                   onChange={(e) => handleNestedChange('sender', 'address', e.target.value)}
                   style={{ resize: 'none' }}
+                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -464,6 +623,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="+1 (555) 019-2834" 
                   value={invoiceData.sender.phone}
                   onChange={(e) => handleNestedChange('sender', 'phone', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -474,13 +634,14 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="EIN-9928347" 
                   value={invoiceData.sender.taxId}
                   onChange={(e) => handleNestedChange('sender', 'taxId', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
             </div>
           </div>
 
-          {/* Section: Client Info */}
-          <div>
+          {/* Section: Totals & Settings */}
+          <div className="premium-card">
             <div className="form-section-title">
               <User size={16} />
               <span>Bill To (Client Details)</span>
@@ -494,6 +655,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="Seba Global" 
                   value={invoiceData.client.name}
                   onChange={(e) => handleNestedChange('client', 'name', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -504,6 +666,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="billing@sebaglobal.com" 
                   value={invoiceData.client.email}
                   onChange={(e) => handleNestedChange('client', 'email', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -517,6 +680,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   value={invoiceData.client.address}
                   onChange={(e) => handleNestedChange('client', 'address', e.target.value)}
                   style={{ resize: 'none' }}
+                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -529,6 +693,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="+44 20 7946 0958" 
                   value={invoiceData.client.phone}
                   onChange={(e) => handleNestedChange('client', 'phone', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -539,13 +704,14 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   placeholder="VAT-GB1234567" 
                   value={invoiceData.client.taxId}
                   onChange={(e) => handleNestedChange('client', 'taxId', e.target.value)}
+                  disabled={isLocked}
                 />
               </div>
             </div>
           </div>
-
-          {/* Section: Line Items */}
-          <div>
+          
+          {/* Section: Notes & Terms */}
+          <div className="premium-card">
             <div className="form-section-title">
               <FileText size={16} />
               <span>Line Items</span>
@@ -554,14 +720,31 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
             {invoiceData.items.map((item, index) => (
               <div 
                 key={index} 
-                className="form-row" 
+                className="form-row invoice-item-row" 
                 style={{ 
                   borderBottom: '1px solid #f1f5f9', 
                   paddingBottom: '1rem', 
-                  marginBottom: '1rem',
-                  gridTemplateColumns: '2fr 0.6fr 1fr 0.8fr'
+                  marginBottom: '1rem'
                 }}
               >
+                <div className="form-group">
+                  <label>SL</label>
+                  <div style={{
+                    padding: '0.75rem 0.5rem',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: 'var(--radius-md)',
+                    fontWeight: 600,
+                    textAlign: 'center',
+                    border: '1px solid var(--border-color)',
+                    fontSize: '0.9rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '44px'
+                  }}>
+                    {index + 1}
+                  </div>
+                </div>
                 <div className="form-group">
                   <label>Description *</label>
                   <input 
@@ -570,6 +753,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                     placeholder="Premium Web Development Service" 
                     value={item.description}
                     onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                    disabled={isLocked}
                   />
                 </div>
                 <div className="form-group">
@@ -581,6 +765,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                     step="any"
                     value={item.quantity}
                     onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                    disabled={isLocked}
                   />
                 </div>
                 <div className="form-group">
@@ -592,6 +777,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                     step="any"
                     value={item.unitPrice}
                     onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
+                    disabled={isLocked}
                   />
                 </div>
                 <div className="form-group" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '0.5rem' }}>
@@ -609,7 +795,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                       {item.amount.toFixed(2)}
                     </div>
                   </div>
-                  {invoiceData.items.length > 1 && (
+                  {!isLocked && invoiceData.items.length > 1 && (
                     <button 
                       type="button" 
                       className="btn btn-danger" 
@@ -623,19 +809,21 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
               </div>
             ))}
 
-            <button 
-              type="button" 
-              className="btn btn-secondary btn-sm" 
-              onClick={handleAddItem}
-              style={{ marginTop: '0.5rem' }}
-            >
-              <Plus size={14} />
-              <span>Add Item</span>
-            </button>
+            {!isLocked && (
+              <button 
+                type="button" 
+                className="btn btn-secondary btn-sm" 
+                onClick={handleAddItem}
+                style={{ marginTop: '0.5rem' }}
+              >
+                <Plus size={14} />
+                <span>Add Item</span>
+              </button>
+            )}
           </div>
 
           {/* Section: Global Settings & Subtotals */}
-          <div>
+          <div className="premium-card">
             <div className="form-section-title">
               <DollarSign size={16} />
               <span>Taxes, Discounts & Payments</span>
@@ -650,6 +838,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   max="100"
                   value={invoiceData.globalDiscountRate}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, globalDiscountRate: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -659,6 +848,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.taxName}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, taxName: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -670,6 +860,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   max="100"
                   value={invoiceData.globalTaxRate}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, globalTaxRate: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -683,6 +874,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   step="any"
                   value={invoiceData.shippingFee}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, shippingFee: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -694,6 +886,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   step="any"
                   value={invoiceData.amountPaid}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, amountPaid: e.target.value }))}
+                  disabled={isLocked}
                 />
               </div>
               <div className="form-group">
@@ -702,11 +895,12 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   className="form-control" 
                   value={invoiceData.status}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, status: e.target.value }))}
+                  disabled={isLocked}
                 >
+                  <option value="Draft">Draft</option>
                   <option value="Unpaid">Unpaid</option>
                   <option value="Paid">Paid</option>
                   <option value="Overdue">Overdue</option>
-                  <option value="Draft">Draft</option>
                 </select>
               </div>
             </div>
@@ -720,6 +914,7 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
                   value={invoiceData.notes}
                   onChange={(e) => setInvoiceData(prev => ({ ...prev, notes: e.target.value }))}
                   style={{ resize: 'none' }}
+                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -727,12 +922,110 @@ function InvoiceForm({ invoice, onSave, onCancel, invoices }) {
 
         </div>
 
-        {/* Right Side: Live A4 PDF Preview Container */}
+        {/* Live A4 PDF Preview Container at the bottom */}
         <div>
           <InvoicePreview invoiceData={invoiceData} />
         </div>
 
       </div>
+
+      {/* Confirmation Finalization Modal Overlay */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 3000,
+          padding: '1rem',
+          animation: 'fadeIn 0.2s ease-out'
+        }} className="no-print">
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '500px',
+            width: '100%',
+            padding: '2rem',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid #f1f5f9'
+          }}>
+            <h4 style={{ 
+              margin: '0 0 1rem 0', 
+              fontSize: '1.25rem', 
+              fontWeight: 800, 
+              color: '#991b1b', 
+              fontFamily: "'Outfit', sans-serif" 
+            }}>
+              Confirm Invoice Finalization
+            </h4>
+            
+            <p style={{ fontSize: '0.9rem', color: '#1e293b', lineHeight: '1.6', margin: '0 0 1.5rem 0' }}>
+              <strong>This action will finalize the invoice.</strong>
+              <br /><br />
+              Once confirmed, this invoice will be added to the Invoice History as an official record. After finalization, the invoice content can no longer be edited. Only its payment status (Paid/Unpaid/Overdue) may be updated.
+            </p>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.8rem', 
+                fontWeight: 700, 
+                color: '#475569', 
+                marginBottom: '0.5rem',
+                textTransform: 'uppercase'
+              }}>
+                Type <code style={{ color: '#b91c1c', fontSize: '0.85rem', padding: '0.1rem 0.3rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>CONFIRM</code> to finalise:
+              </label>
+              <input 
+                type="text" 
+                className="form-control"
+                placeholder="CONFIRM"
+                value={confirmPhrase}
+                onChange={(e) => setConfirmPhrase(e.target.value)}
+                style={{ 
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontWeight: 700,
+                  textAlign: 'center'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setConfirmPhrase('');
+                }}
+                style={{ fontWeight: 600 }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary" 
+                disabled={confirmPhrase !== 'CONFIRM'}
+                onClick={handleConfirmFinalize}
+                style={{ 
+                  fontWeight: 700, 
+                  backgroundColor: confirmPhrase === 'CONFIRM' ? '#b91c1c' : '#cbd5e1', 
+                  border: 'none', 
+                  cursor: confirmPhrase === 'CONFIRM' ? 'pointer' : 'not-allowed'
+                }}
+              >
+                Confirm & Finalize
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

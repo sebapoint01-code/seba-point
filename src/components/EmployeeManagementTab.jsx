@@ -160,7 +160,7 @@ function EmployeeManagementTab({ token }) {
         {admins.length === 0 ? (
           <p style={{ color: '#64748b', fontStyle: 'italic' }}>No employee admin accounts registered yet.</p>
         ) : (
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+          <div className="table-responsive" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>

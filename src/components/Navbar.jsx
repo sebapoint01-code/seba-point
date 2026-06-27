@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ExternalLink, Shield, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 function Navbar({ settings }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,6 +24,9 @@ function Navbar({ settings }) {
   ];
 
   const siteLogo = settings?.logo || '/logo.png';
+  const siteName = settings?.siteName || 'SebaPoint';
+  
+  const socialLinks = settings?.socialLinks || {};
 
   const isActive = (path) => {
     if (path === '/home' && (pathname === '/' || pathname === '/home')) return true;
@@ -53,21 +56,30 @@ function Navbar({ settings }) {
         alignItems: 'center'
       }}>
         
-        {/* Logo */}
+        {/* Brand: Logo + Name */}
         <Link 
           to="/home"
           onClick={() => setMobileMenuOpen(false)}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}
         >
           <img 
             src={siteLogo} 
-            alt={settings?.siteName || "SebaPoint Logo"} 
+            alt={siteName} 
             style={{ 
-              height: isScrolled ? '50px' : '65px', 
+              height: isScrolled ? '45px' : '55px', 
               transition: 'height 0.3s ease',
               objectFit: 'contain' 
             }} 
           />
+          <span style={{ 
+            fontSize: isScrolled ? '1.25rem' : '1.5rem', 
+            fontWeight: 800, 
+            color: '#0f172a',
+            fontFamily: 'var(--font-display)',
+            transition: 'font-size 0.3s ease'
+          }}>
+            {siteName}
+          </span>
         </Link>
 
         {/* Desktop Navigation */}

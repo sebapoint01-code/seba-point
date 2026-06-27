@@ -21,6 +21,7 @@ function OwnerLogin({ onLoginSuccess }) {
     
     setError('');
     setLoading(true);
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -131,7 +132,7 @@ function OwnerLogin({ onLoginSuccess }) {
   };
 
   return (
-    <div style={{
+    <div className="login-container" style={{
       minHeight: '80vh',
       display: 'flex',
       alignItems: 'center',
@@ -140,7 +141,7 @@ function OwnerLogin({ onLoginSuccess }) {
       backgroundColor: '#f8fafc',
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
-      <div style={{
+      <div className="login-card" style={{
         width: '100%',
         maxWidth: '440px',
         backgroundColor: '#ffffff',

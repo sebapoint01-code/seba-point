@@ -7,12 +7,14 @@ import invoiceRouter from './routes/invoices.js';
 import authRouter from './routes/auth.js';
 import configRouter from './routes/config.js';
 import servicesRouter from './routes/services.js';
+import uploadRouter from './routes/upload.js';
 import { activateLocalFallback } from './localDb.js';
 
 // Schema imports for seeding
 import User from './models/User.js';
 import Service from './models/Service.js';
 import WebSettings from './models/WebSettings.js';
+import Invoice from './models/Invoice.js';
 
 dotenv.config();
 
@@ -106,11 +108,9 @@ async function seedDatabase() {
           brokerFee: '৳1,500',
           timeline: '3 - 5 Business Days',
           documents: [
-            'Copy of National ID (NID) of owner',
-            'Recent Passport-sized Photo (3 copies)',
-            'Rental Agreement of commercial space',
-            'Holding Tax Receipt of landlord',
-            'Holding Utility Bill (copy)'
+            'একক মালিকানা: ছবি ও এনআইডি কপি',
+            'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+            'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
           ]
         },
         {
@@ -123,10 +123,9 @@ async function seedDatabase() {
           brokerFee: '৳1,000',
           timeline: '2 - 3 Business Days',
           documents: [
-            'Original copy of the previous Trade License',
-            'TIN Certificate (Tax Identification Number)',
-            'Holding Tax paid receipt (if applicable)',
-            'Challan/Bank receipt of previous payment'
+            'একক মালিকানা: ছবি ও এনআইডি কপি',
+            'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+            'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
           ]
         },
         {
@@ -139,10 +138,9 @@ async function seedDatabase() {
           brokerFee: '৳5,000',
           timeline: '7 - 10 Business Days',
           documents: [
-            'Proposed Company Names (for clearance)',
-            'NID and Photos of all directors (minimum 2 for LTD, 1 for OPC)',
-            'TIN Certificates of all directors',
-            'Shareholding ratio & authorized capital details'
+            'একক মালিকানা: ছবি ও এনআইডি কপি',
+            'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+            'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
           ]
         },
         {
@@ -155,9 +153,9 @@ async function seedDatabase() {
           brokerFee: '৳1,000',
           timeline: '1 - 2 Business Days',
           documents: [
-            'Copy of NID and Trade License',
-            'Owner phone number (linked to NID)',
-            'Company incorporation papers (if Limited)'
+            'একক মালিকানা: ছবি ও এনআইডি কপি',
+            'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+            'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
           ]
         },
         {
@@ -170,10 +168,9 @@ async function seedDatabase() {
           brokerFee: '৳4,500',
           timeline: '5 - 7 Business Days',
           documents: [
-            'Valid Trade License copy',
-            'Valid TIN & VAT (BIN) certificates',
-            'Bank Solvency Certificate & solvency profile',
-            'Membership Certificate from local Chamber of Commerce'
+            'একক মালিকানা: ছবি ও এনআইডি কপি',
+            'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+            'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
           ]
         },
         {
@@ -186,15 +183,69 @@ async function seedDatabase() {
           brokerFee: '৳3,500',
           timeline: '10 - 15 Business Days',
           documents: [
-            'Trade License copy',
-            'Emergency fire safety plan map/layout',
-            'DoE Form/No-Objection Certificate (NOC)',
-            'Landlord holding agreement'
+            'একক মালিকানা: ছবি ও এনআইডি কপি',
+            'অংশীদারি ব্যবসা: সকল অংশীদারের ছবি, এনআইডি কপি ও চুক্তিপত্র (৪০ পাতা নোটারী)',
+            'লিমিটেড কোম্পানি: চেয়ারম্যান/এমডির ছবি, এনআইডি, মেমোরেন্ডাম, ইনকর্পোরেশন সার্টিফিকেট, ফরম XII'
           ]
         }
       ];
       await Service.insertMany(defaultServices);
       console.log('[SEED] Seeded default Service Cards');
+    }
+
+    // 4. Seed Default Invoice INV-0001 (replicate PDF)
+    const invoiceCount = await Invoice.countDocuments();
+    if (invoiceCount === 0) {
+      const defaultInvoices = [
+        {
+          invoiceNumber: 'INV-0001',
+          issueDate: new Date('2026-06-21T00:00:00Z'),
+          dueDate: new Date('2026-07-05T00:00:00Z'),
+          paymentTerms: 'Net 14',
+          currency: 'INR',
+          accentColor: '#16a34a',
+          sender: {
+            name: 'HAFEEZ MD ABDUR RASHID KHAN',
+            email: 'naimofficial7509@gmail.com',
+            address: 'BNCC HQ, 32 ESHA KHA AVENUE, SECTOR 06, UTTARA, DHAKA',
+            phone: '+8801855553660',
+            logoUrl: '/logo.png',
+            taxId: ''
+          },
+          client: {
+            name: 'MD ABDUR RASHID KHAN',
+            email: 'naimofficial7509@gmail.com',
+            address: 'khan bari, sobanpur, word no.07, bagadi, chandpur sadar, chandpur.',
+            phone: '+8801855553660',
+            taxId: ''
+          },
+          items: [
+            {
+              description: 'TL',
+              quantity: 1,
+              unitPrice: 3500,
+              taxRate: 0,
+              discount: 0,
+              amount: 3500
+            }
+          ],
+          globalDiscountRate: 0,
+          globalTaxRate: 0,
+          taxName: 'Tax',
+          shippingFee: 0,
+          subtotal: 3500,
+          discountTotal: 0,
+          taxTotal: 0,
+          total: 3500,
+          amountPaid: 3500,
+          balanceDue: 0,
+          status: 'Paid',
+          notes: 'Thank you for your business. Let us know if you have any questions.',
+          terms: ''
+        }
+      ];
+      await Invoice.insertMany(defaultInvoices);
+      console.log('[SEED] Seeded default replica invoice INV-0001');
     }
   } catch (error) {
     console.error('[SEED] Seeding error:', error);
@@ -243,6 +294,7 @@ app.use('/api/invoices', invoiceRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/config', configRouter);
 app.use('/api/services', servicesRouter);
+app.use('/api/upload', uploadRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -255,6 +307,8 @@ app.get('/api/health', (req, res) => {
 // Fallback for local development running standard Express server
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   const PORT = process.env.PORT || 3002;
+
+  // Start Server
   app.listen(PORT, () => {
     console.log(`Express server running on http://localhost:${PORT}`);
   });

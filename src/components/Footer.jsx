@@ -1,19 +1,52 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Mail, MapPin, Phone } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Youtube, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 
 function Footer({ settings }) {
   const siteLogo = settings?.logo || '/logo.png';
+  const siteName = settings?.siteName || 'SebaPoint';
   const address = settings?.footerAddress || 'NE3, House-16, Road-10, Gulshan-1, Dhaka-1212, Bangladesh.';
   const phone = settings?.footerPhone || '01813-884475';
   const email = settings?.footerEmail || 'sebapoint01@gmail.com';
-  const facebookUrl = settings?.socialLinks?.facebook || 'https://www.facebook.com/sebapoint';
+  
+  const socialLinks = settings?.socialLinks || { facebook: 'https://www.facebook.com/sebapoint' };
 
   const quickLinks = [
     { path: '/home', label: 'Home' },
     { path: '/about', label: 'About Us' },
     { path: '/contact', label: 'Contacts' }
   ];
+
+  const renderSocialIcon = (platform, url) => {
+    if (!url) return null;
+    
+    const icons = {
+      facebook: <Facebook size={18} />,
+      instagram: <Instagram size={18} />,
+      linkedin: <Linkedin size={18} />,
+      youtube: <Youtube size={18} />,
+      twitter: <Twitter size={18} />
+    };
+    
+    return (
+      <a 
+        key={platform}
+        href={url} 
+        target="_blank" 
+        rel="noreferrer"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: '36px', height: '36px', borderRadius: '50%',
+          backgroundColor: 'rgba(255,255,255,0.1)', color: 'white',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#16a34a'; }}
+        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; }}
+      >
+        {icons[platform]}
+      </a>
+    );
+  };
 
   return (
     <footer style={{
@@ -35,37 +68,25 @@ function Footer({ settings }) {
         {/* Column 1: Brand Info */}
         <div>
           <div style={{ 
-            backgroundColor: 'white', 
-            padding: '0.5rem 1rem', 
-            borderRadius: '8px', 
-            display: 'inline-block',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.75rem',
             marginBottom: '1.5rem'
           }}>
             <img 
               src={siteLogo} 
-              alt={settings?.siteName || "SebaPoint Logo"} 
+              alt={siteName} 
               style={{ height: '40px', objectFit: 'contain' }} 
             />
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white', fontFamily: 'var(--font-display)' }}>
+              {siteName}
+            </span>
           </div>
           <p style={{ color: '#cbd5e1', lineHeight: '1.6', marginBottom: '1.5rem' }}>
             Your One Stop Service Hub. We specialize in Trade Licenses, Company Registration, and Digital Business Solutions in Bangladesh.
           </p>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <a 
-              href={facebookUrl} 
-              target="_blank" 
-              rel="noreferrer"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '36px', height: '36px', borderRadius: '50%',
-                backgroundColor: 'rgba(255,255,255,0.1)', color: 'white',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#16a34a'; }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; }}
-            >
-              <Facebook size={18} />
-            </a>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+             {Object.entries(socialLinks).map(([platform, url]) => renderSocialIcon(platform, url))}
           </div>
         </div>
 
@@ -112,7 +133,7 @@ function Footer({ settings }) {
       {/* Copyright Bar */}
       <div style={{ backgroundColor: '#020617', padding: '1.5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', color: '#475569', fontSize: '0.85rem' }}>
-          © {new Date().getFullYear()} {settings?.siteName || 'SebaPoint'}. All rights reserved.
+          © {new Date().getFullYear()} {siteName}. All rights reserved.
         </div>
       </div>
     </footer>

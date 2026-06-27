@@ -81,7 +81,7 @@ function Dashboard({ invoices, onCreateInvoice, onEditInvoice }) {
       </div>
 
       {/* Analytics & Summary Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem', marginBottom: '2.5rem' }}>
+      <div className="dashboard-summary-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem', marginBottom: '2.5rem' }}>
         
         {/* Status Distribution */}
         <div style={{

@@ -39,20 +39,39 @@ function ServicesCMS({ token }) {
     }
   };
 
-  const handleImageUpload = (e, callback) => {
+  const handleImageUpload = async (e, callback) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Image size should be less than 2MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size should be less than 5MB.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      callback(reader.result);
-    };
-    reader.readAsDataURL(file);
+    setLoading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload image');
+      }
+      
+      callback(data.url);
+    } catch (err) {
+      showNotification(err.message, true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTogglePause = async (id, currentPauseState) => {
@@ -341,7 +360,7 @@ function ServicesCMS({ token }) {
           </div>
         </form>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-responsive" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #f1f5f9' }}>

@@ -209,19 +209,42 @@ function Homepage({ settings, services }) {
               key={service.id} 
               to={`/product/${service.id}`}
               className="service-card"
-              style={{ padding: '0', overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
+              style={{ 
+                padding: '0', 
+                overflow: 'hidden', 
+                textDecoration: 'none', 
+                color: 'inherit', 
+                display: 'flex', 
+                flexDirection: 'column',
+                background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+                border: '1px solid #e2e8f0',
+                borderRadius: '24px',
+                transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(22,163,74,0.15), 0 10px 15px -5px rgba(22,163,74,0.1)';
+                e.currentTarget.style.borderColor = '#86efac';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01)';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+              }}
             >
               {/* Card Image Block */}
               <div className="card-image-box" style={{
-                height: '180px',
+                height: '220px',
                 width: '100%',
-                backgroundColor: '#ffffff',
-                borderBottom: '1px solid var(--border-color)',
+                background: 'radial-gradient(circle at center, #f1f5f9 0%, #e2e8f0 100%)',
+                borderBottom: '1px solid #e2e8f0',
                 overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '1rem'
+                padding: '2rem',
+                position: 'relative'
               }}>
                 <img 
                   src={service.image} 
@@ -230,25 +253,81 @@ function Homepage({ settings, services }) {
                     maxWidth: '100%',
                     maxHeight: '100%',
                     objectFit: 'contain',
-                    transition: 'transform 0.4s'
+                    transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                   }}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                  className="card-img-element"
                 />
+                <span style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  padding: '0.35rem 0.8rem',
+                  borderRadius: '20px',
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  boxShadow: '0 4px 10px rgba(22,163,74,0.3)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  ✓ Verified
+                </span>
               </div>
 
               {/* Card Content Block */}
-              <div style={{ padding: '1.75rem 1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <h3 style={{ fontSize: '1.2rem', color: '#0f172a', marginBottom: '0.5rem', fontFamily: 'var(--font-display)' }}>
+              <div style={{ padding: '1.85rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <h3 style={{ fontSize: '1.25rem', color: '#0f172a', marginBottom: '0.75rem', fontFamily: 'var(--font-display)', fontWeight: 850 }}>
                   {service.title}
                 </h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, marginBottom: '1.25rem' }}>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.6', flex: 1, marginBottom: '1.5rem' }}>
                   {service.shortDescription}
                 </p>
-                <span className="card-arrow-link" style={{ color: '#16a34a', marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem' }}>
-                  <span>View Requirements & Pricing</span>
-                  <ArrowRight size={14} />
-                </span>
+
+                {/* Pricing Grid */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  marginBottom: '1.5rem',
+                  padding: '1rem',
+                  backgroundColor: '#f0fdf4',
+                  borderRadius: '12px',
+                  border: '1px solid #dcfce7'
+                }}>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', color: '#15803d', display: 'block', textTransform: 'uppercase', fontWeight: 800, marginBottom: '0.2rem' }}>Broker Fee</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#16a34a', fontFamily: 'var(--font-display)' }}>
+                      {service.brokerFee}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right', borderLeft: '1px solid #bbf7d0', paddingLeft: '1rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#475569', display: 'block', textTransform: 'uppercase', fontWeight: 800, marginBottom: '0.2rem' }}>Govt Fee</span>
+                    <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155' }}>
+                      {service.govtFee}
+                    </span>
+                  </div>
+                </div>
+
+                {/* CTA Action Bar */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  padding: '0.85rem',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)'
+                }} className="card-cta-btn">
+                  <span>View Details & Order</span>
+                  <ArrowRight size={16} />
+                </div>
               </div>
             </Link>
           ))}
